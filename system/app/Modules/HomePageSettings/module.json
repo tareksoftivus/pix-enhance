@@ -1,0 +1,12 @@
+{
+    "name": "HomePageSettings",
+    "alias": "home-page-settings",
+    "description": "Admin home page settings",
+    "version": "1.0.0",
+    "priority": 140,
+    "providers": [
+        "App\\Modules\\HomePageSettings\\Providers\\HomePageSettingsServiceProvider"
+    ],
+    "requires": [],
+    "active": true
+}

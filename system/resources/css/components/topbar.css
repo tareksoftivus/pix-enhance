@@ -1,0 +1,14 @@
+/* ===== Topbar ===== */
+.topbar {
+  background-color: var(--color-neutral-0);
+}
+
+@supports (background-color: color-mix(in srgb, red, transparent)) {
+  .topbar {
+    background-color: color-mix(
+      in srgb,
+      var(--color-neutral-0) 80%,
+      transparent
+    );
+  }
+}

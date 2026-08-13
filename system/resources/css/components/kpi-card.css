@@ -1,0 +1,20 @@
+/* KPI Card Components */
+.kpi-card {
+  @apply bg-neutral-10 rounded-3xl border border-neutral-100 p-6 transition-all duration-300 hover:shadow-md dark:shadow-neutral-50 dark:hover:shadow-lg;
+}
+
+.kpi-icon-wrapper {
+  @apply flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-300;
+}
+
+.kpi-card:hover .kpi-icon-wrapper {
+  @apply scale-110;
+}
+
+.stat-card {
+  @apply bg-neutral-10 relative overflow-hidden rounded-2xl border border-neutral-100 p-6 transition-all duration-300 ease-in-out;
+}
+
+.stat-card:hover {
+  @apply border-primary/20 -translate-y-1 shadow-md;
+}

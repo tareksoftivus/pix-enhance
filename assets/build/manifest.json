@@ -1,0 +1,41 @@
+{
+  "_apexcharts-DAOjaoWl.js": {
+    "file": "assets/apexcharts-DAOjaoWl.js",
+    "name": "apexcharts"
+  },
+  "_modal-bcG2wOVr.js": {
+    "file": "assets/modal-bcG2wOVr.js",
+    "name": "modal"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-DLSV2izJ.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-Bk-5GoaF.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "_modal-bcG2wOVr.js",
+      "_apexcharts-DAOjaoWl.js"
+    ],
+    "css": [
+      "assets/app-C4eX_GUS.css"
+    ]
+  },
+  "resources/js/components/frontend-menu-builder.js": {
+    "file": "assets/frontend-menu-builder-BjyQxxUq.js",
+    "name": "frontend-menu-builder",
+    "src": "resources/js/components/frontend-menu-builder.js",
+    "isEntry": true,
+    "imports": [
+      "_modal-bcG2wOVr.js"
+    ]
+  }
+}

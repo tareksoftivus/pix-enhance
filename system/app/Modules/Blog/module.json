@@ -1,0 +1,16 @@
+{
+    "name": "Blog",
+    "alias": "blog",
+    "description": "Blog with posts, categories and a public frontend",
+    "version": "1.0.0",
+    "priority": 70,
+    "providers": [
+        "App\\Modules\\Blog\\Providers\\BlogServiceProvider"
+    ],
+    "requires": [],
+    "packages": {
+        "require": {},
+        "require-dev": {}
+    },
+    "active": true
+}

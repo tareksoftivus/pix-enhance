@@ -1,0 +1,16 @@
+{
+    "name": "Support",
+    "alias": "support",
+    "description": "Support ticket management for users and administrators",
+    "version": "1.0.0",
+    "priority": 70,
+    "providers": [
+        "App\\Modules\\Support\\Providers\\SupportServiceProvider"
+    ],
+    "requires": [],
+    "packages": {
+        "require": {},
+        "require-dev": {}
+    },
+    "active": true
+}

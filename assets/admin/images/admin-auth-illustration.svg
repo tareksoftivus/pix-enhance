@@ -1,0 +1,104 @@
+<svg viewBox="0 0 620 560" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Isometric illustration">
+    <defs>
+        <linearGradient id="ai-face-a" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#eaf3ff" />
+            <stop offset="1" stop-color="#c9e0ff" />
+        </linearGradient>
+        <linearGradient id="ai-face-b" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#3b82f6" />
+            <stop offset="1" stop-color="#1d5fd8" />
+        </linearGradient>
+        <linearGradient id="ai-face-c" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1e64d6" />
+            <stop offset="1" stop-color="#154aa8" />
+        </linearGradient>
+        <linearGradient id="ai-screen" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffffff" />
+            <stop offset="1" stop-color="#dfecff" />
+        </linearGradient>
+        <style>
+            .ai-float {
+                animation: ai-float-move 6s ease-in-out infinite;
+                transform-box: view-box;
+                transform-origin: center;
+                will-change: transform;
+            }
+            .ai-shadow {
+                animation: ai-shadow-scale 6s ease-in-out infinite;
+                transform-box: fill-box;
+                transform-origin: center;
+                will-change: transform;
+            }
+            @keyframes ai-float-move {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-14px); }
+            }
+            @keyframes ai-shadow-scale {
+                0%, 100% { transform: scale(1); opacity: 0.18; }
+                50% { transform: scale(0.93); opacity: 0.14; }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .ai-float, .ai-shadow { animation: none; }
+            }
+        </style>
+    </defs>
+
+    <ellipse class="ai-shadow" cx="310" cy="500" rx="200" ry="34" fill="#1d5fd8" opacity="0.18" />
+
+    <g transform="translate(536 360)">
+        <path d="M0 60 Q-26 24 -6 -6 Q4 22 0 60" fill="#34c38f" />
+        <path d="M0 60 Q22 30 8 2 Q-2 26 0 60" fill="#2aa87a" />
+    </g>
+    <g transform="translate(72 400)">
+        <path d="M0 44 Q-18 18 -4 -4 Q3 16 0 44" fill="#34c38f" opacity="0.9" />
+    </g>
+    <path d="M110 470 L110 430 M100 442 L110 430 L120 442" stroke="#1d5fd8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.7" />
+
+    <g class="ai-float">
+        <g>
+            <path d="M250 120 L330 160 L330 300 L250 260 Z" fill="url(#ai-face-c)" />
+            <path d="M330 160 L410 120 L410 260 L330 300 Z" fill="url(#ai-face-b)" />
+            <path d="M250 120 L330 80 L410 120 L330 160 Z" fill="url(#ai-face-a)" />
+            <path d="M268 168 L300 184 M268 190 L300 206 M268 212 L300 228" stroke="#9dc2ff" stroke-width="4" stroke-linecap="round" />
+            <path d="M352 172 L388 154 M352 194 L388 176 M352 216 L388 198" stroke="#bcd6ff" stroke-width="4" stroke-linecap="round" opacity="0.7" />
+        </g>
+
+        <g>
+            <path d="M120 250 L210 295 L210 400 L120 355 Z" fill="url(#ai-face-c)" />
+            <path d="M210 295 L300 250 L300 355 L210 400 Z" fill="url(#ai-face-b)" />
+            <path d="M120 250 L210 205 L300 250 L210 295 Z" fill="url(#ai-face-a)" />
+            <path d="M138 292 L184 315 M138 314 L184 337" stroke="#9dc2ff" stroke-width="4" stroke-linecap="round" />
+        </g>
+
+        <g>
+            <path d="M330 280 L430 330 L430 400 L330 350 Z" fill="url(#ai-face-c)" />
+            <path d="M430 330 L520 285 L520 355 L430 400 Z" fill="url(#ai-face-b)" />
+            <path d="M330 280 L420 235 L520 285 L430 330 Z" fill="url(#ai-face-a)" />
+
+            <path d="M392 262 L436 240 L468 256 L424 278 Z" fill="#0f172a" opacity="0.9" />
+            <path d="M400 260 L436 242 L460 254 L424 272 Z" fill="url(#ai-screen)" />
+            <path d="M418 268 L432 261 M418 272 L436 263" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" />
+        </g>
+
+        <path d="M300 300 L340 320 L340 332 L300 312 Z" fill="#2f74e6" opacity="0.85" />
+        <path d="M410 250 L448 231 L448 243 L410 262 Z" fill="#5a93ef" opacity="0.7" />
+
+        <g transform="translate(470 120)">
+            <rect x="0" y="0" width="60" height="76" rx="6" fill="#ffffff" transform="skewY(-8)" />
+            <path d="M12 20 H48 M12 34 H48 M12 48 H36" stroke="#9dc2ff" stroke-width="4" stroke-linecap="round" transform="skewY(-8)" />
+        </g>
+
+        <g transform="translate(360 196)">
+            <circle cx="0" cy="0" r="11" fill="#1d5fd8" />
+            <path d="M-10 14 Q0 6 10 14 L8 40 L-8 40 Z" fill="#3b82f6" />
+        </g>
+        <g transform="translate(206 350)">
+            <path d="M-16 -6 L0 -13 L16 -6 L0 1 Z" fill="#0f172a" />
+            <circle cx="0" cy="6" r="10" fill="#1d5fd8" />
+            <path d="M-9 18 Q0 11 9 18 L7 40 L-7 40 Z" fill="#3b82f6" />
+        </g>
+
+        <circle cx="470" cy="230" r="9" fill="#f43f5e" opacity="0.9" />
+        <circle cx="150" cy="180" r="7" fill="#fbbf24" opacity="0.9" />
+    </g>
+</svg>
