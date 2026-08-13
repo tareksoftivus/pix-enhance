@@ -1,0 +1,197 @@
+/**
+ * Typography Scale
+ * Headings: Space Grotesk · Body: Inter
+ * Fluid sizing via clamp() so every breakpoint reads well without media queries.
+ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-display {
+    font-family: var(--font-display);
+    color: var(--color-title);
+    font-weight: 700;
+    letter-spacing: -0.028em;
+    line-height: 1.12;
+    text-wrap: balance;
+}
+
+p {
+    text-wrap: pretty;
+}
+
+/* --- Display scale ------------------------------------------------------ */
+/* The centred hero has the full shell to work with, so this can scale on a
+   normal curve — the line count is governed by the title's `ch` cap instead. */
+.text-display-1 {
+    font-size: clamp(2.5rem, 1.2rem + 3.4vw, 4.25rem);
+    line-height: 1.06;
+    letter-spacing: -0.034em;
+}
+
+.text-display-2 {
+    font-size: clamp(2.25rem, 1.35rem + 3.4vw, 3.75rem);
+    line-height: 1.08;
+    letter-spacing: -0.032em;
+}
+
+.text-display-3 {
+    font-size: clamp(1.75rem, 1.25rem + 1.9vw, 2.5rem);
+    line-height: 1.16;
+    letter-spacing: -0.026em;
+}
+
+.text-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.125rem, 1.02rem + 0.4vw, 1.375rem);
+    line-height: 1.32;
+    letter-spacing: -0.02em;
+    color: var(--color-title);
+    font-weight: 600;
+}
+
+/* --- Body scale --------------------------------------------------------- */
+.text-lead {
+    font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
+    line-height: 1.72;
+    color: var(--color-muted);
+}
+
+.text-body {
+    font-size: 1rem;
+    line-height: 1.72;
+    color: var(--color-muted);
+}
+
+.text-small {
+    font-size: 0.875rem;
+    line-height: 1.62;
+    color: var(--color-muted);
+}
+
+.text-tiny {
+    font-size: 0.75rem;
+    line-height: 1.55;
+    color: var(--color-faint);
+}
+
+.text-eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-primary-soft);
+}
+
+.text-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+}
+
+.text-numeric {
+    font-variant-numeric: tabular-nums;
+}
+
+/* --- Gradient + highlight treatments ------------------------------------ */
+.text-gradient {
+    background-image: var(--gradient-text);
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.text-gradient-brand {
+    background-image: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.text-underline-brush {
+    position: relative;
+    display: inline-block;
+}
+
+.text-underline-brush::after {
+    content: '';
+    position: absolute;
+    inset-inline: -0.08em;
+    bottom: 0.06em;
+    height: 0.34em;
+    border-radius: var(--radius-pill);
+    background: var(--gradient-brand);
+    opacity: 0.28;
+    z-index: -1;
+}
+
+/* --- Long-form prose (blog, docs, legal) -------------------------------- */
+.prose-enhance {
+    color: var(--color-body);
+    font-size: 1.0625rem;
+    line-height: 1.85;
+}
+
+.prose-enhance > * + * {
+    margin-top: 1.5rem;
+}
+
+.prose-enhance h2 {
+    font-size: 1.875rem;
+    margin-top: 3rem;
+}
+
+.prose-enhance h3 {
+    font-size: 1.375rem;
+    margin-top: 2.25rem;
+}
+
+.prose-enhance a {
+    color: var(--color-primary-soft);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+}
+
+.prose-enhance a:hover {
+    color: var(--color-title);
+}
+
+.prose-enhance ul,
+.prose-enhance ol {
+    padding-left: 1.35rem;
+}
+
+.prose-enhance ul {
+    list-style: disc;
+}
+
+.prose-enhance ol {
+    list-style: decimal;
+}
+
+.prose-enhance li::marker {
+    color: var(--color-primary);
+}
+
+.prose-enhance blockquote {
+    border-left: 3px solid var(--color-primary);
+    padding-left: 1.25rem;
+    color: var(--color-title);
+    font-size: 1.125rem;
+    font-style: italic;
+}
+
+.prose-enhance code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--color-card);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 0.15em 0.45em;
+}

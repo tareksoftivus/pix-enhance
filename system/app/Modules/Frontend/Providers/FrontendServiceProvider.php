@@ -13,10 +13,10 @@ use App\Modules\Frontend\Services\MenuTreeService;
 use App\Modules\Frontend\Services\PageComposerService;
 use App\Modules\Frontend\Services\PageRenderService;
 use App\Modules\Frontend\Services\SectionRegistry;
-use App\Modules\Shared\Support\BasePanelModuleProvider;
 use App\Modules\Frontend\Services\ThemeRegistry;
 use App\Modules\Frontend\Services\ThemeRenderService;
 use App\Modules\Frontend\Services\ThemeSettingsService;
+use App\Modules\Shared\Support\BasePanelModuleProvider;
 
 class FrontendServiceProvider extends BasePanelModuleProvider
 {

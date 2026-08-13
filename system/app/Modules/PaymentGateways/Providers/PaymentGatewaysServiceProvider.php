@@ -2,11 +2,11 @@
 
 namespace App\Modules\PaymentGateways\Providers;
 
-use App\Modules\Shared\Support\BasePanelModuleProvider;
 use App\Modules\PaymentGateways\Services\PaymentGatewayManager;
 use App\Modules\PaymentGateways\Services\PaymentService;
 use App\Modules\PaymentGateways\Services\RefundService;
 use App\Modules\PaymentGateways\Services\WebhookLogService;
+use App\Modules\Shared\Support\BasePanelModuleProvider;
 
 class PaymentGatewaysServiceProvider extends BasePanelModuleProvider
 {

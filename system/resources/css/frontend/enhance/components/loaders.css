@@ -1,0 +1,176 @@
+/**
+ * Spinners, skeletons & shimmer placeholders
+ */
+
+/* --- Spinner ------------------------------------------------------------ */
+.spinner {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid rgb(250 250 250 / 0.16);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 720ms linear infinite;
+}
+
+.spinner-sm {
+    width: 0.875rem;
+    height: 0.875rem;
+    border-width: 1.5px;
+}
+
+.spinner-lg {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-width: 3px;
+}
+
+/* --- Orbit spinner (premium loading state) ------------------------------ */
+.spinner-orbit {
+    position: relative;
+    width: 3rem;
+    height: 3rem;
+}
+
+.spinner-orbit::before,
+.spinner-orbit::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid transparent;
+}
+
+.spinner-orbit::before {
+    border-top-color: var(--color-primary);
+    border-right-color: var(--color-primary);
+    animation: spin 900ms var(--ease-in-out-soft) infinite;
+}
+
+.spinner-orbit::after {
+    inset: 0.5rem;
+    border-bottom-color: var(--color-secondary);
+    border-left-color: var(--color-secondary);
+    animation: spin 1.4s var(--ease-in-out-soft) infinite reverse;
+}
+
+/* --- Dot pulse ---------------------------------------------------------- */
+.dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3125rem;
+}
+
+.dots span {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background-color: var(--color-primary-soft);
+    animation: dot-bounce 1.2s var(--ease-in-out-soft) infinite;
+}
+
+.dots span:nth-child(2) {
+    animation-delay: 160ms;
+}
+
+.dots span:nth-child(3) {
+    animation-delay: 320ms;
+}
+
+/* --- Skeleton ----------------------------------------------------------- */
+.skeleton {
+    position: relative;
+    border-radius: 10px;
+    background-color: var(--color-card);
+    overflow: hidden;
+}
+
+.skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+        90deg,
+        transparent,
+        rgb(250 250 250 / 0.07) 45%,
+        rgb(250 250 250 / 0.11) 50%,
+        rgb(250 250 250 / 0.07) 55%,
+        transparent
+    );
+    background-size: 220% 100%;
+    animation: shimmer 1.6s linear infinite;
+}
+
+.skeleton-text {
+    height: 0.75rem;
+    border-radius: var(--radius-pill);
+}
+
+.skeleton-title {
+    height: 1.25rem;
+    width: 60%;
+    border-radius: var(--radius-pill);
+}
+
+.skeleton-avatar {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+}
+
+.skeleton-thumb {
+    aspect-ratio: 16 / 10;
+    width: 100%;
+    border-radius: 16px;
+}
+
+.skeleton-card {
+    border-radius: var(--radius-card);
+    height: 12rem;
+}
+
+.skeleton-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+/* --- Scan line (AI processing overlay) ---------------------------------- */
+.scanline {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+.scanline::before {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 34%;
+    background-image: linear-gradient(
+        to top,
+        rgb(91 95 248 / 0) 0%,
+        rgb(91 95 248 / 0.28) 60%,
+        rgb(167 139 250 / 0.5) 100%
+    );
+    box-shadow: 0 -2px 22px 2px rgb(91 95 248 / 0.6);
+    animation: scan 2.6s var(--ease-in-out-soft) infinite;
+}
+
+/* --- Page loader -------------------------------------------------------- */
+.page-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    place-items: center;
+    background-color: var(--color-ink);
+    transition: opacity var(--duration-slow) var(--ease-out-soft);
+}
+
+.page-loader.is-done {
+    opacity: 0;
+    pointer-events: none;
+}

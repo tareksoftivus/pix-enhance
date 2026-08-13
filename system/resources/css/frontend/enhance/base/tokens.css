@@ -1,0 +1,101 @@
+/**
+ * Design Tokens
+ * ---------------------------------------------------------------------------
+ * Tailwind v4 reads `@theme` and generates both the utility classes
+ * (bg-primary, text-muted, rounded-card, font-display, ...) *and* matching
+ * CSS custom properties on :root, so hand-written component CSS and Tailwind
+ * utilities always stay in sync. Rebrand the whole template from this file.
+ * ---------------------------------------------------------------------------
+ */
+
+@theme {
+    /* --- Brand ---------------------------------------------------------- */
+    --color-primary: #5b5ff8;
+    --color-primary-soft: #7f83ff;
+    --color-primary-deep: #4145d6;
+    --color-secondary: #7c3aed;
+    --color-secondary-soft: #a06cff;
+    --color-accent: #22c55e;
+    --color-accent-soft: #4ade80;
+
+    /* --- Surfaces ------------------------------------------------------- */
+    --color-ink: #09090b;
+    --color-surface: #18181b;
+    --color-card: #27272a;
+    --color-line: #3f3f46;
+    --color-line-soft: #2a2a30;
+
+    /* --- Text ----------------------------------------------------------- */
+    --color-title: #fafafa;
+    --color-body: #d4d4d8;
+    --color-muted: #a1a1aa;
+    --color-faint: #71717a;
+
+    /* --- Status --------------------------------------------------------- */
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --color-info: #38bdf8;
+
+    /* --- Typography ----------------------------------------------------- */
+    --font-display: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+
+    /* --- Radii ---------------------------------------------------------- */
+    --radius-card: 24px;
+    --radius-panel: 32px;
+    --radius-field: 14px;
+    --radius-pill: 999px;
+
+    /* --- Elevation ------------------------------------------------------ */
+    --shadow-soft: 0 2px 6px -1px rgb(0 0 0 / 0.28), 0 12px 32px -12px rgb(0 0 0 / 0.55);
+    --shadow-lift: 0 4px 10px -2px rgb(0 0 0 / 0.32), 0 28px 64px -20px rgb(0 0 0 / 0.7);
+    --shadow-glow: 0 0 0 1px rgb(91 95 248 / 0.28), 0 22px 70px -22px rgb(91 95 248 / 0.65);
+
+    /* --- Motion --------------------------------------------------------- */
+    --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+    --duration-fast: 180ms;
+    --duration-base: 320ms;
+    --duration-slow: 620ms;
+
+    /* --- Layout --------------------------------------------------------- */
+    --container-shell: 1240px;
+    --spacing-section: 7.5rem;
+}
+
+:root {
+    /* Alpha ramps used by glass surfaces, borders and hairlines. */
+    --glass-bg: rgb(39 39 42 / 0.55);
+    --glass-bg-strong: rgb(24 24 27 / 0.82);
+    --glass-border: rgb(250 250 250 / 0.08);
+    --glass-border-strong: rgb(250 250 250 / 0.14);
+    --hairline: rgb(63 63 70 / 0.6);
+
+    /* Reusable gradient recipes. */
+    --gradient-brand: linear-gradient(120deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    --gradient-brand-soft: linear-gradient(
+        120deg,
+        rgb(91 95 248 / 0.18) 0%,
+        rgb(124 58 237 / 0.18) 100%
+    );
+    /* Deliberately loops colour → white → colour so the panning animation
+       (.anim-gradient) never parks on a washed-out, near-white segment. */
+    --gradient-text: linear-gradient(
+        100deg,
+        var(--color-secondary-soft) 0%,
+        #ffffff 20%,
+        var(--color-primary-soft) 46%,
+        #f2f0ff 68%,
+        var(--color-secondary-soft) 100%
+    );
+    --gradient-sheen: linear-gradient(
+        105deg,
+        transparent 35%,
+        rgb(255 255 255 / 0.14) 50%,
+        transparent 65%
+    );
+
+    color-scheme: dark;
+}

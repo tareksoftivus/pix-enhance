@@ -1,0 +1,163 @@
+/**
+ * Testimonials
+ * An even grid on desktop plus an infinite marquee variant.
+ *
+ * A grid rather than CSS columns: `column-count` fills one column to the
+ * bottom before starting the next, so the cards never line up across the row
+ * and the last column ends short. A grid gives equal rows, and because the
+ * author block is pushed down with `margin-top: auto`, every attribution in a
+ * row sits on the same baseline regardless of quote length.
+ */
+
+.testimonial-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+    .testimonial-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .testimonial-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.testimonial {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.125rem;
+    padding: 1.75rem;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--hairline);
+    background-color: var(--color-surface);
+    transition:
+        transform var(--duration-base) var(--ease-out-soft),
+        border-color var(--duration-base) var(--ease-out-soft),
+        box-shadow var(--duration-base) var(--ease-out-soft);
+}
+
+.testimonial:hover {
+    transform: translateY(-4px);
+    border-color: rgb(91 95 248 / 0.38);
+    box-shadow: var(--shadow-lift);
+}
+
+/**
+ * The rating uses the shared `.rating` component from stats.css. It replaces
+ * the oversized quote glyph that used to sit absolutely positioned in the
+ * top-right corner — it overlapped the first line of every quote, and a rating
+ * carries information the decoration did not.
+ *
+ * The card is a column flexbox, which would otherwise stretch the inline-flex
+ * row to the full card width.
+ */
+.testimonial > .rating {
+    align-self: flex-start;
+}
+
+.testimonial__text {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: var(--color-body);
+}
+
+.testimonial__text strong {
+    color: var(--color-title);
+    font-weight: 600;
+}
+
+.testimonial__author {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 1.125rem;
+    margin-top: auto;
+    border-top: 1px solid var(--hairline);
+}
+
+.testimonial__avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: none;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--glass-border-strong);
+    background-color: var(--color-card);
+}
+
+.testimonial__name {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-title);
+}
+
+.testimonial__role {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-faint);
+}
+
+.testimonial__badge {
+    margin-left: auto;
+    flex: none;
+}
+
+/* --- Featured testimonial ----------------------------------------------- */
+/**
+ * Differentiated by surface, not by type scale. A larger font here made the
+ * card taller than its neighbours, and since every card in a grid row shares
+ * one height, that stranded the other two quotes above a pocket of dead space.
+ */
+.testimonial-featured {
+    background-image: var(--gradient-brand-soft);
+    border-color: rgb(91 95 248 / 0.32);
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.07);
+}
+
+.testimonial-featured .testimonial__text {
+    color: var(--color-title);
+}
+
+.testimonial-featured .testimonial__author {
+    border-top-color: rgb(250 250 250 / 0.14);
+}
+
+/* --- Marquee variant ---------------------------------------------------- */
+.marquee {
+    position: relative;
+    display: flex;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.marquee__track {
+    display: flex;
+    flex: none;
+    gap: 1.5rem;
+    padding-right: 1.5rem;
+    min-width: 100%;
+    animation: marquee var(--marquee-duration, 46s) linear infinite;
+}
+
+.marquee:hover .marquee__track {
+    animation-play-state: paused;
+}
+
+.marquee-reverse .marquee__track {
+    animation-direction: reverse;
+}
+
+.marquee__track > * {
+    width: min(22rem, 78vw);
+    flex: none;
+    margin-bottom: 0;
+}

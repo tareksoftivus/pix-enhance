@@ -93,6 +93,7 @@ class SyncModulePackagesCommand extends Command
 
             if (($changes[$section]['added'] ?? []) === [] && ($changes[$section]['updated'] ?? []) === [] && ($changes[$section]['removed'] ?? []) === []) {
                 $this->line('  - no changes');
+
                 continue;
             }
 

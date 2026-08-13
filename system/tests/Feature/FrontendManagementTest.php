@@ -14,8 +14,7 @@ test('theme registry resolves installed themes', function () {
     $registry = app(ThemeRegistry::class);
 
     expect(array_keys($registry->all()))
-        ->toContain('classic')
-        ->toContain('studio');
+        ->toBe(['enhance']);
 });
 
 test('published home page renders with seeded frontend content', function () {

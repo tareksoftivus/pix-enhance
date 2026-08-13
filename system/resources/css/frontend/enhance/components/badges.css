@@ -1,0 +1,220 @@
+/**
+ * Badges, Pills & Chips
+ */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.3125rem 0.75rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--hairline);
+    background-color: var(--color-card);
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+.badge svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex: none;
+}
+
+.badge-sm {
+    padding: 0.1875rem 0.5rem;
+    font-size: 0.6875rem;
+}
+
+.badge-lg {
+    padding: 0.4375rem 0.9375rem;
+    font-size: 0.8125rem;
+}
+
+/* --- Tones -------------------------------------------------------------- */
+.badge-primary {
+    color: var(--color-primary-soft);
+    background-color: rgb(91 95 248 / 0.14);
+    border-color: rgb(91 95 248 / 0.28);
+}
+
+.badge-secondary {
+    color: var(--color-secondary-soft);
+    background-color: rgb(124 58 237 / 0.14);
+    border-color: rgb(124 58 237 / 0.28);
+}
+
+.badge-success {
+    color: var(--color-accent-soft);
+    background-color: rgb(34 197 94 / 0.14);
+    border-color: rgb(34 197 94 / 0.28);
+}
+
+.badge-warning {
+    color: #fbbf24;
+    background-color: rgb(245 158 11 / 0.14);
+    border-color: rgb(245 158 11 / 0.28);
+}
+
+.badge-danger {
+    color: #fca5a5;
+    background-color: rgb(239 68 68 / 0.14);
+    border-color: rgb(239 68 68 / 0.28);
+}
+
+.badge-info {
+    color: #7dd3fc;
+    background-color: rgb(56 189 248 / 0.14);
+    border-color: rgb(56 189 248 / 0.28);
+}
+
+.badge-glass {
+    color: var(--color-title);
+    background-color: var(--glass-bg);
+    border-color: var(--glass-border-strong);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+/* --- Announcement pill (hero) ------------------------------------------- */
+.badge-announce {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.4375rem 0.4375rem 0.4375rem 0.75rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--glass-border-strong);
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    color: var(--color-body);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-soft);
+    transition:
+        border-color var(--duration-base) var(--ease-out-soft),
+        transform var(--duration-base) var(--ease-out-soft);
+}
+
+.badge-announce:hover {
+    border-color: rgb(91 95 248 / 0.5);
+    transform: translateY(-2px);
+}
+
+.badge-announce__tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1875rem 0.5625rem;
+    border-radius: var(--radius-pill);
+    background-image: var(--gradient-brand);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.badge-announce__arrow {
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-muted);
+    transition: transform var(--duration-base) var(--ease-out-soft);
+}
+
+.badge-announce:hover .badge-announce__arrow {
+    transform: translateX(3px);
+    color: var(--color-title);
+}
+
+/* --- Status dot --------------------------------------------------------- */
+.status-dot {
+    position: relative;
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: var(--color-accent);
+    flex: none;
+}
+
+.status-dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background-color: inherit;
+    animation: ping 2s var(--ease-out-soft) infinite;
+}
+
+.status-dot-warning {
+    background-color: var(--color-warning);
+}
+
+.status-dot-danger {
+    background-color: var(--color-danger);
+}
+
+.status-dot-muted {
+    background-color: var(--color-faint);
+}
+
+.status-dot-muted::after {
+    display: none;
+}
+
+/* --- Chips (removable filters) ------------------------------------------ */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    padding: 0.375rem 0.5rem 0.375rem 0.8125rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--hairline);
+    background-color: var(--color-card);
+    color: var(--color-body);
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.chip__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    background-color: rgb(250 250 250 / 0.08);
+    color: var(--color-muted);
+    transition: all var(--duration-fast) var(--ease-out-soft);
+}
+
+.chip__close:hover {
+    background-color: rgb(239 68 68 / 0.2);
+    color: #fca5a5;
+}
+
+.chip__close svg {
+    width: 0.6875rem;
+    height: 0.6875rem;
+}
+
+/* --- Key hint ----------------------------------------------------------- */
+.kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    padding: 0.125rem 0.4375rem;
+    border-radius: 6px;
+    border: 1px solid var(--color-line);
+    border-bottom-width: 2px;
+    background-color: var(--color-card);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+}

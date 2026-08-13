@@ -46,6 +46,7 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
+                'resources/js/frontend/enhance/main.js',
                 'resources/js/components/frontend-menu-builder.js',
                 ...moduleAssetInputs,
             ],

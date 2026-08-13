@@ -17,6 +17,7 @@ class ListPanelsCommand extends Command
 
         if (empty($panels)) {
             $this->warn('No panels registered in config/panels.php');
+
             return self::SUCCESS;
         }
 
@@ -26,9 +27,9 @@ class ListPanelsCommand extends Command
         $tableData = [];
 
         foreach ($panels as $key => $panel) {
-            $panelPath = app_path("Panels/" . ucfirst($key));
+            $panelPath = app_path('Panels/'.ucfirst($key));
             $exists = File::exists($panelPath) ? '✓' : '✗';
-            $active = !empty($panel['active']) ? '✓' : '✗';
+            $active = ! empty($panel['active']) ? '✓' : '✗';
 
             $tableData[] = [
                 'Key' => $key,

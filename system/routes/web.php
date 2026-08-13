@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\ConfirmPasswordController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
@@ -54,6 +55,9 @@ Route::post('/locale', function (Request $request) {
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
     Route::post('logout', [LogoutController::class, 'logout'])->name('logout');
+
+    Route::get('confirm-password', [ConfirmPasswordController::class, 'showConfirmForm'])->name('password.confirm');
+    Route::post('confirm-password', [ConfirmPasswordController::class, 'confirm']);
 
     // Email Verification
     Route::get('email/verify', [EmailVerificationController::class, 'notice'])->name('verification.notice');

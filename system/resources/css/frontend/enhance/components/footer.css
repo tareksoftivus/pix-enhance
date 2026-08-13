@@ -1,0 +1,212 @@
+/**
+ * Site footer
+ */
+
+.site-footer {
+    position: relative;
+    padding-top: 5rem;
+    border-top: 1px solid var(--hairline);
+    background-color: var(--color-ink);
+    overflow: hidden;
+}
+
+.site-footer::before {
+    content: '';
+    position: absolute;
+    inset: -14rem 0 auto 0;
+    height: 28rem;
+    background-image: radial-gradient(
+        50% 50% at 50% 50%,
+        rgb(91 95 248 / 0.14),
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
+.footer-grid {
+    display: grid;
+    gap: 3rem 2rem;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 640px) {
+    .footer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .footer-grid {
+        grid-template-columns: 1.6fr repeat(4, minmax(0, 1fr));
+        gap: 2.5rem;
+    }
+}
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: 22rem;
+}
+
+.footer-brand__text {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--color-muted);
+}
+
+.footer-col__title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-title);
+    margin-bottom: 1.125rem;
+}
+
+.footer-col__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    width: fit-content;
+}
+
+.footer-link:hover {
+    color: var(--color-title);
+}
+
+.footer-link::before {
+    content: '';
+    width: 0;
+    height: 1px;
+    background-image: var(--gradient-brand);
+    transition: width var(--duration-base) var(--ease-out-soft);
+}
+
+.footer-link:hover::before {
+    width: 0.75rem;
+}
+
+/* --- Newsletter --------------------------------------------------------- */
+.footer-newsletter {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.375rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--hairline);
+    background-color: var(--color-surface);
+    transition: border-color var(--duration-base) var(--ease-out-soft);
+}
+
+.footer-newsletter:focus-within {
+    border-color: rgb(91 95 248 / 0.5);
+}
+
+.footer-newsletter .input {
+    border: 0;
+    background: transparent;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+}
+
+.footer-newsletter .input:focus {
+    box-shadow: none;
+    background: transparent;
+}
+
+/* --- Social ------------------------------------------------------------- */
+.social-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.social-link {
+    display: grid;
+    place-items: center;
+    width: 2.375rem;
+    height: 2.375rem;
+    border-radius: 12px;
+    border: 1px solid var(--hairline);
+    background-color: var(--color-surface);
+    color: var(--color-muted);
+    transition: all var(--duration-base) var(--ease-out-soft);
+}
+
+.social-link:hover {
+    color: #fff;
+    border-color: rgb(91 95 248 / 0.5);
+    background-color: rgb(91 95 248 / 0.14);
+    transform: translateY(-3px);
+}
+
+.social-link svg {
+    width: 1.0625rem;
+    height: 1.0625rem;
+}
+
+/* --- Bottom bar --------------------------------------------------------- */
+.footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 4rem;
+    padding-block: 1.75rem;
+    border-top: 1px solid var(--hairline);
+    font-size: 0.8125rem;
+    color: var(--color-faint);
+}
+
+.footer-bottom__links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.footer-bottom__links a:hover {
+    color: var(--color-title);
+}
+
+/**
+ * Oversized watermark wordmark.
+ * Sized in container-query units so it tracks the shell exactly — `vw` would
+ * keep growing past the shell's 1240px cap and overflow on wide screens.
+ * Tune the single `cqw` value to change how much of the width it fills.
+ */
+.footer-watermark-fit {
+    container-type: inline-size;
+    overflow: clip;
+}
+
+.footer-watermark {
+    position: relative;
+    display: block;
+    margin-top: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 18.3cqw;
+    font-weight: 700;
+    /* Tight, but not so tight that ascenders escape the line box and get
+       clipped by the footer's own overflow. */
+    line-height: 0.86;
+    letter-spacing: -0.045em;
+    text-align: center;
+    white-space: nowrap;
+    background-image: linear-gradient(180deg, rgb(250 250 250 / 0.11), transparent 82%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    user-select: none;
+    pointer-events: none;
+}

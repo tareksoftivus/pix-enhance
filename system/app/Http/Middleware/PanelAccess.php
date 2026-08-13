@@ -15,7 +15,7 @@ class PanelAccess
     {
         $config = config("panels.{$panel}");
 
-        if (!$config || empty($config['active'])) {
+        if (! $config || empty($config['active'])) {
             abort(404);
         }
 
@@ -23,14 +23,14 @@ class PanelAccess
         $guard = $config['guard'] ?? 'web';
         $user = Auth::guard($guard)->user();
 
-        if (!$user) {
+        if (! $user) {
             abort(403, "You don't have access to this panel.");
         }
 
         // Check role-based access (empty roles = all authenticated users allowed)
         $requiredRoles = $config['roles'] ?? [];
 
-        if (!empty($requiredRoles) && !$user->hasAnyRole($requiredRoles)) {
+        if (! empty($requiredRoles) && ! $user->hasAnyRole($requiredRoles)) {
             abort(403, "You don't have access to this panel.");
         }
 

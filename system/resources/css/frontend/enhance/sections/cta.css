@@ -1,0 +1,96 @@
+/**
+ * Final call-to-action panel
+ */
+
+.cta-panel {
+    position: relative;
+    padding: clamp(2.5rem, 1.5rem + 4vw, 5rem) clamp(1.5rem, 0.75rem + 3vw, 4rem);
+    border-radius: var(--radius-panel);
+    border: 1px solid rgb(91 95 248 / 0.3);
+    background-color: var(--color-surface);
+    background-image:
+        radial-gradient(90% 130% at 50% -20%, rgb(124 58 237 / 0.28), transparent 60%),
+        radial-gradient(70% 100% at 100% 100%, rgb(91 95 248 / 0.22), transparent 62%);
+    overflow: hidden;
+    isolation: isolate;
+    text-align: center;
+}
+
+/* Soft inner glow — no grid pattern, matching the hero's treatment. */
+.cta-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+        60% 55% at 50% 100%,
+        rgb(124 58 237 / 0.16),
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Slow-orbiting glow blob. */
+.cta-panel::after {
+    content: '';
+    position: absolute;
+    width: 34rem;
+    height: 34rem;
+    top: -60%;
+    left: 50%;
+    translate: -50% 0;
+    border-radius: 50%;
+    background-image: radial-gradient(closest-side, rgb(91 95 248 / 0.32), transparent);
+    filter: blur(60px);
+    animation: float-y 12s var(--ease-in-out-soft) infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.cta-panel__inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.75rem;
+    max-width: 44rem;
+    margin-inline: auto;
+}
+
+.cta-panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.875rem;
+}
+
+.cta-panel__note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem 1.5rem;
+}
+
+/* --- Split CTA variant -------------------------------------------------- */
+.cta-split {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+    text-align: left;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 900px) {
+    .cta-split {
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+        gap: 3rem;
+    }
+}
+
+.cta-split .cta-panel__inner {
+    align-items: flex-start;
+    text-align: left;
+    margin-inline: 0;
+}

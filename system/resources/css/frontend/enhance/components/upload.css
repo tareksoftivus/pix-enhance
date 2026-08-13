@@ -1,0 +1,332 @@
+/**
+ * File Upload / Dropzone
+ * Drag state (`.is-dragging`) is toggled by the Alpine `dropzone` component.
+ */
+
+.dropzone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.875rem;
+    padding: 2.25rem 1.5rem;
+    text-align: center;
+    border-radius: 20px;
+    border: 1.5px dashed var(--color-line);
+    background-color: rgb(9 9 11 / 0.42);
+    cursor: pointer;
+    overflow: hidden;
+    transition:
+        border-color var(--duration-base) var(--ease-out-soft),
+        background-color var(--duration-base) var(--ease-out-soft),
+        transform var(--duration-base) var(--ease-out-soft);
+}
+
+.dropzone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+        60% 60% at 50% 0%,
+        rgb(91 95 248 / 0.18),
+        transparent 70%
+    );
+    opacity: 0;
+    transition: opacity var(--duration-base) var(--ease-out-soft);
+    pointer-events: none;
+}
+
+.dropzone:hover {
+    border-color: rgb(91 95 248 / 0.55);
+    background-color: rgb(91 95 248 / 0.05);
+}
+
+.dropzone:hover::before {
+    opacity: 1;
+}
+
+.dropzone.is-dragging {
+    border-color: var(--color-primary);
+    border-style: solid;
+    background-color: rgb(91 95 248 / 0.1);
+    transform: scale(1.012);
+}
+
+.dropzone.is-dragging::before {
+    opacity: 1;
+}
+
+/* Compact variant for tight panels (hero mock, sidebars). */
+.dropzone-compact {
+    padding: 1.375rem 1rem;
+    gap: 0.625rem;
+}
+
+.dropzone-compact .dropzone__icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 14px;
+}
+
+.dropzone-compact .dropzone__icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.dropzone-compact .dropzone__title {
+    font-size: 0.875rem;
+}
+
+.dropzone-compact .dropzone__text {
+    font-size: 0.75rem;
+}
+
+.dropzone__icon {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 18px;
+    border: 1px solid rgb(91 95 248 / 0.28);
+    background-image: linear-gradient(150deg, rgb(91 95 248 / 0.24), rgb(124 58 237 / 0.08));
+    color: var(--color-primary-soft);
+    transition: transform var(--duration-base) var(--ease-out-soft);
+}
+
+.dropzone__icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.dropzone:hover .dropzone__icon,
+.dropzone.is-dragging .dropzone__icon {
+    transform: translateY(-4px) scale(1.05);
+}
+
+.dropzone__title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-title);
+}
+
+.dropzone__text {
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+}
+
+.dropzone__input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* --- Inline file field (compact, real <input type="file">) --------------- */
+.file-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: 12px;
+    border: 1px dashed var(--color-line);
+    background-color: rgb(9 9 11 / 0.45);
+    cursor: pointer;
+    transition:
+        border-color var(--duration-base) var(--ease-out-soft),
+        background-color var(--duration-base) var(--ease-out-soft);
+}
+
+.file-field:hover {
+    border-color: rgb(91 95 248 / 0.55);
+    background-color: rgb(91 95 248 / 0.07);
+}
+
+.file-field__input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.file-field__icon {
+    display: grid;
+    place-items: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    flex: none;
+    border-radius: 9px;
+    border: 1px solid rgb(91 95 248 / 0.26);
+    background-image: linear-gradient(150deg, rgb(91 95 248 / 0.24), rgb(124 58 237 / 0.06));
+    color: var(--color-primary-soft);
+}
+
+.file-field__icon svg {
+    width: 0.9375rem;
+    height: 0.9375rem;
+}
+
+.file-field__body {
+    min-width: 0;
+}
+
+.file-field__name {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-title);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-field__meta {
+    display: block;
+    font-size: 0.625rem;
+    color: var(--color-faint);
+}
+
+/* --- Supported formats -------------------------------------------------- */
+.format-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+}
+
+.format-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1875rem 0.5rem;
+    border-radius: 7px;
+    border: 1px solid var(--hairline);
+    background-color: var(--color-card);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+    text-transform: uppercase;
+}
+
+/* --- Upload queue item -------------------------------------------------- */
+.upload-item {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem;
+    border-radius: 16px;
+    border: 1px solid var(--hairline);
+    background-color: var(--color-card);
+}
+
+.upload-item__thumb {
+    position: relative;
+    width: 3rem;
+    height: 3rem;
+    flex: none;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: var(--color-surface);
+    border: 1px solid var(--hairline);
+}
+
+.upload-item__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upload-item__body {
+    min-width: 0;
+    flex: 1;
+}
+
+.upload-item__name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-title);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.upload-item__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.125rem;
+    font-size: 0.75rem;
+    color: var(--color-faint);
+}
+
+.upload-item__meta-dot {
+    width: 0.1875rem;
+    height: 0.1875rem;
+    border-radius: 50%;
+    background-color: currentcolor;
+    opacity: 0.6;
+}
+
+/* --- Enhancement control rail ------------------------------------------- */
+.control-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--hairline);
+}
+
+.control-row:last-child {
+    border-bottom: 0;
+}
+
+.control-row__label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-body);
+}
+
+.control-row__label svg {
+    width: 0.9375rem;
+    height: 0.9375rem;
+    color: var(--color-faint);
+}
+
+.scale-picker {
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.1875rem;
+    border-radius: var(--radius-pill);
+    background-color: rgb(9 9 11 / 0.6);
+    border: 1px solid var(--hairline);
+}
+
+.scale-picker__option {
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    transition: all var(--duration-fast) var(--ease-out-soft);
+}
+
+.scale-picker__option:hover {
+    color: var(--color-title);
+}
+
+.scale-picker__option.is-active {
+    color: #fff;
+    background-image: var(--gradient-brand);
+    box-shadow: 0 6px 16px -8px rgb(91 95 248 / 0.95);
+}

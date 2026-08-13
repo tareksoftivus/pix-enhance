@@ -22,10 +22,11 @@ class MakePanelCommand extends Command
 
         $panelPath = app_path("Panels/{$studlyName}");
         $viewsPath = resource_path("views/panels/{$lowerName}");
-        $layoutComponentPath = resource_path("views/components/layouts");
+        $layoutComponentPath = resource_path('views/components/layouts');
 
         if (File::exists($panelPath)) {
             $this->error("Panel {$studlyName} already exists!");
+
             return self::FAILURE;
         }
 
@@ -35,7 +36,7 @@ class MakePanelCommand extends Command
         File::makeDirectory("{$panelPath}/Requests", 0755, true);
         File::makeDirectory($viewsPath, 0755, true);
 
-        if (!File::exists($layoutComponentPath)) {
+        if (! File::exists($layoutComponentPath)) {
             File::makeDirectory($layoutComponentPath, 0755, true);
         }
 
@@ -89,20 +90,20 @@ class MakePanelCommand extends Command
         $this->line("        'components' => '{$componentsConfig}',");
         $this->line("        'active'     => true,");
         $this->line("        'navigation' => [");
-        $this->line("            [");
+        $this->line('            [');
         $this->line("                'label' => 'Dashboard',");
         $this->line("                'icon'  => 'ph-house',");
         $this->line("                'route' => '{$lowerName}.dashboard',");
         $this->line("                'group' => 'Main Menu',");
-        $this->line("            ],");
-        $this->line("        ],");
-        $this->line("    ],");
+        $this->line('            ],');
+        $this->line('        ],');
+        $this->line('    ],');
 
         if ($customComponents) {
             $this->newLine();
             $this->info("Custom components directory created at: resources/views/panels/{$lowerName}/components/");
-            $this->line("Override any shared component by creating the same file structure here.");
-            $this->line("Example: components/forms/input.blade.php overrides <x-forms.input>");
+            $this->line('Override any shared component by creating the same file structure here.');
+            $this->line('Example: components/forms/input.blade.php overrides <x-forms.input>');
         }
 
         return self::SUCCESS;
@@ -164,15 +165,16 @@ Simply create a file with the same path as the shared component to override it.
 MD;
         File::put("{$componentsPath}/README.md", $readme);
 
-        $this->info("Custom components directory created with base structure.");
+        $this->info('Custom components directory created with base structure.');
     }
 
     protected function createFromStub(string $stub, string $destination, array $replacements): void
     {
         $stubPath = base_path("stubs/{$stub}.stub");
 
-        if (!File::exists($stubPath)) {
+        if (! File::exists($stubPath)) {
             $this->warn("Stub not found: {$stubPath}");
+
             return;
         }
 

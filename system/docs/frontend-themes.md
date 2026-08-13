@@ -27,15 +27,13 @@ Each theme entry should define:
 - `fallback_renderer`
 - `theme_settings_schema`
 
-## Current example themes
+## Current theme
 
-- `classic`
-- `studio`
+- `enhance`
 
-Each theme has its own layout views in:
+The theme has its own layout views in:
 
-- `resources/views/frontend/themes/classic/`
-- `resources/views/frontend/themes/studio/`
+- `resources/views/frontend/themes/enhance/`
 
 ## Active theme resolution
 
@@ -52,9 +50,9 @@ The active public theme is resolved by:
 Theme settings are stored in `frontend_theme_settings` and keyed by prefix:
 
 - `active_theme`
-- `theme.classic.enabled`
-- `theme.classic.primary_color`
-- `theme.studio.logo_text`
+- `theme.enhance.enabled`
+- `theme.enhance.primary_color`
+- `theme.enhance.logo_text`
 
 This allows theme-scoped settings without giving themes their own database-defined schema.
 

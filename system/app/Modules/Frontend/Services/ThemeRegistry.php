@@ -48,7 +48,7 @@ class ThemeRegistry
         $themes = $this->all();
         $first = array_key_first($themes);
 
-        return $first ?: 'classic';
+        return $first ?: 'enhance';
     }
 
     public function defaultLayoutKey(string $themeKey): string

@@ -14,15 +14,15 @@ class MediaService
     {
         $query = Media::query();
 
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('original_name', 'like', "%{$search}%");
+                    ->orWhere('original_name', 'like', "%{$search}%");
             });
         }
 
-        if (!empty($filters['type'])) {
+        if (! empty($filters['type'])) {
             $query->where('type', $filters['type']);
         }
 
@@ -39,8 +39,8 @@ class MediaService
         $size = $file->getSize();
         $name = pathinfo($originalName, PATHINFO_FILENAME);
 
-        $fileName = Str::ulid() . '.' . $extension;
-        $directory = 'media/' . now()->format('Y/m');
+        $fileName = Str::ulid().'.'.$extension;
+        $directory = 'media/'.now()->format('Y/m');
         $path = $file->storeAs($directory, $fileName, $disk);
 
         return Media::create([

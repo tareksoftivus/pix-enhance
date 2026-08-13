@@ -1,0 +1,205 @@
+/**
+ * "How it works" step sequence
+ */
+
+.steps {
+    position: relative;
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+    .steps-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 2rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .steps-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1.5rem;
+    }
+}
+
+/* Connector line behind the numbered badges (desktop only). */
+@media (min-width: 768px) {
+    .steps::before {
+        content: '';
+        position: absolute;
+        top: 1.75rem;
+        left: 12%;
+        right: 12%;
+        height: 1px;
+        background-image: linear-gradient(
+            90deg,
+            transparent,
+            var(--color-line) 12%,
+            var(--color-line) 88%,
+            transparent
+        );
+        pointer-events: none;
+    }
+}
+
+.step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    align-items: center;
+}
+
+.step__badge {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border-strong);
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-soft);
+    color: var(--color-primary-soft);
+    /* Own stacking context so the fill can sit above the badge's background
+       but still behind the icon. */
+    isolation: isolate;
+    transition:
+        transform var(--duration-base) var(--ease-out-soft),
+        border-color var(--duration-base) var(--ease-out-soft),
+        box-shadow var(--duration-base) var(--ease-out-soft),
+        color var(--duration-base) var(--ease-out-soft);
+}
+
+/**
+ * Hover fill.
+ * A gradient background-image cannot be transitioned, so the fill lives on a
+ * pseudo-element whose opacity animates instead. `z-index: -1` keeps it above
+ * the badge's own background yet below the icon and the number.
+ */
+.step__badge::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background-image: var(--gradient-brand);
+    opacity: 0;
+    transition: opacity var(--duration-base) var(--ease-out-soft);
+}
+
+.step__badge svg {
+    width: 1.375rem;
+    height: 1.375rem;
+    transition: transform var(--duration-base) var(--ease-out-soft);
+}
+
+.step:hover .step__badge,
+.step:focus-within .step__badge {
+    transform: translateY(-4px);
+    border-color: transparent;
+    box-shadow: var(--shadow-glow);
+    color: #fff;
+}
+
+.step:hover .step__badge::before,
+.step:focus-within .step__badge::before {
+    opacity: 1;
+}
+
+.step:hover .step__badge svg,
+.step:focus-within .step__badge svg {
+    transform: scale(1.08);
+}
+
+/* Invert the counter so it stays legible once the badge is filled. */
+.step:hover .step__number,
+.step:focus-within .step__number {
+    background-image: none;
+    background-color: #fff;
+    color: var(--color-primary);
+}
+
+.step__number {
+    position: absolute;
+    top: -0.4375rem;
+    right: -0.4375rem;
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background-image: var(--gradient-brand);
+    border: 2px solid var(--color-ink);
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: #fff;
+    transition:
+        background-color var(--duration-base) var(--ease-out-soft),
+        color var(--duration-base) var(--ease-out-soft);
+}
+
+.step__title {
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--color-title);
+    letter-spacing: -0.02em;
+}
+
+.step__text {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--color-muted);
+    max-width: 26ch;
+}
+
+/* --- Vertical timeline variant ------------------------------------------ */
+.timeline {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding-left: 2.75rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    left: 1.1875rem;
+    width: 1px;
+    background-image: linear-gradient(
+        180deg,
+        var(--color-primary),
+        var(--color-secondary) 45%,
+        transparent
+    );
+}
+
+.timeline__item {
+    position: relative;
+}
+
+.timeline__dot {
+    position: absolute;
+    top: 0.25rem;
+    left: -2.75rem;
+    display: grid;
+    place-items: center;
+    width: 2.375rem;
+    height: 2.375rem;
+    border-radius: 12px;
+    border: 1px solid var(--hairline);
+    background-color: var(--color-surface);
+    color: var(--color-primary-soft);
+}
+
+.timeline__dot svg {
+    width: 1rem;
+    height: 1rem;
+}

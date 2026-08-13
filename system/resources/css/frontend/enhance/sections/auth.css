@@ -1,0 +1,496 @@
+/**
+ * Authentication pages
+ * ---------------------------------------------------------------------------
+ * A two-column shell: the form column carries the whole viewport on small
+ * screens, and a brand panel joins it from 1024px up. Both columns scroll
+ * independently of one another only in the sense that the page is one grid —
+ * there is no nested scroller, so mobile keyboards behave normally.
+ *
+ * Shared by login, register, forgot/reset password, email verification,
+ * two-factor and password confirmation.
+ * ---------------------------------------------------------------------------
+ */
+
+.auth {
+    display: grid;
+    min-height: 100vh;
+    min-height: 100dvh;
+    grid-template-columns: minmax(0, 1fr);
+    background-color: var(--color-ink);
+}
+
+@media (min-width: 1024px) {
+    .auth {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1440px) {
+    .auth {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+    }
+}
+
+/* ==========================================================================
+   Form column
+   ========================================================================== */
+
+.auth__panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1.25rem 2rem;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+@media (min-width: 640px) {
+    .auth__panel {
+        padding: 2rem 2.5rem 2.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .auth__panel {
+        padding: 2.25rem 3rem 2.5rem;
+    }
+}
+
+/* A single soft wash behind the form so the column is not a flat black slab.
+   Kept subtle — the form is the subject, not the background. */
+.auth__panel::before {
+    content: '';
+    position: absolute;
+    inset: -30% 0 auto 0;
+    height: 34rem;
+    z-index: -1;
+    background-image: radial-gradient(
+        50% 50% at 50% 50%,
+        rgb(91 95 248 / 0.16),
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
+.auth__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex: none;
+}
+
+.auth__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    transition: color var(--duration-fast) var(--ease-out-soft);
+}
+
+.auth__back:hover {
+    color: var(--color-title);
+}
+
+.auth__back svg {
+    width: 0.9375rem;
+    height: 0.9375rem;
+    transition: transform var(--duration-base) var(--ease-out-soft);
+}
+
+.auth__back:hover svg {
+    transform: translateX(-3px);
+}
+
+/* Vertically centres the form, but only once there is room to spare — the
+   flex basis lets it fall back to normal flow on short viewports. */
+.auth__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 2.5rem;
+}
+
+.auth__inner {
+    width: 100%;
+    max-width: 25.5rem;
+    margin-inline: auto;
+}
+
+.auth__foot {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.25rem;
+    font-size: 0.75rem;
+    color: var(--color-faint);
+}
+
+.auth__foot-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+}
+
+.auth__foot a:hover {
+    color: var(--color-title);
+}
+
+/* ==========================================================================
+   Heading block
+   ========================================================================== */
+
+.auth__head {
+    margin-bottom: 1.75rem;
+}
+
+/* Icon medallion for the pages that lead with a state rather than a form
+   (email sent, verify your address, two-factor challenge). */
+.auth__seal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    margin-bottom: 1.25rem;
+    border-radius: 18px;
+    border: 1px solid rgb(91 95 248 / 0.28);
+    background-image: linear-gradient(150deg, rgb(91 95 248 / 0.26), rgb(124 58 237 / 0.1));
+    color: var(--color-primary-soft);
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.08);
+}
+
+.auth__seal svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.auth__seal-accent {
+    border-color: rgb(34 197 94 / 0.3);
+    background-image: linear-gradient(150deg, rgb(34 197 94 / 0.24), rgb(34 197 94 / 0.06));
+    color: var(--color-accent-soft);
+}
+
+.auth__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 1.45rem + 1vw, 2.125rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.028em;
+    color: var(--color-title);
+}
+
+.auth__lead {
+    margin-top: 0.625rem;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: var(--color-muted);
+}
+
+.auth__lead strong {
+    color: var(--color-title);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   Form
+   ========================================================================== */
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.125rem;
+}
+
+/* "Remember me" beside "Forgot password?" — wraps to two rows when the
+   translation is long rather than crushing either side. */
+.auth-form__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+}
+
+.auth-form__grid {
+    display: grid;
+    gap: 1.125rem;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 480px) {
+    .auth-form__grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Label row that carries a secondary action, e.g. "Password / Forgot?" */
+.field__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.auth__alt {
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline);
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    text-align: center;
+}
+
+.auth__alt a {
+    color: var(--color-primary-soft);
+    font-weight: 600;
+}
+
+.auth__alt a:hover {
+    color: var(--color-title);
+}
+
+/* ==========================================================================
+   Social providers
+   ========================================================================== */
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-block: 1.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-faint);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1 1 auto;
+    height: 1px;
+    background-image: linear-gradient(90deg, transparent, var(--hairline), transparent);
+}
+
+.auth-social {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.auth-social .btn svg {
+    width: 1.0625rem;
+    height: 1.0625rem;
+}
+
+/* ==========================================================================
+   Password strength meter
+   ========================================================================== */
+
+/**
+ * Score is written to a `data-score` attribute by the Alpine component — an
+ * attribute binding, not an inline style, so every colour stays in this file.
+ * The attribute only ever sets a custom property; the bars and the label both
+ * read from it, so there is one place to change a colour and no specificity
+ * race between the filled and unfilled states.
+ */
+.password-meter {
+    --meter-colour: var(--color-line-soft);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.password-meter[data-score='1'] {
+    --meter-colour: var(--color-danger);
+}
+
+.password-meter[data-score='2'] {
+    --meter-colour: var(--color-warning);
+}
+
+.password-meter[data-score='3'] {
+    --meter-colour: var(--color-info);
+}
+
+.password-meter[data-score='4'] {
+    --meter-colour: var(--color-accent);
+}
+
+.password-meter__track {
+    display: flex;
+    flex: 1 1 auto;
+    gap: 0.25rem;
+}
+
+.password-meter__bar {
+    flex: 1 1 0;
+    height: 0.25rem;
+    border-radius: var(--radius-pill);
+    background-color: var(--color-line-soft);
+    transition: background-color var(--duration-base) var(--ease-out-soft);
+}
+
+.password-meter__bar.is-on {
+    background-color: var(--meter-colour);
+}
+
+.password-meter__label {
+    flex: none;
+    min-width: 3.25rem;
+    text-align: right;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--meter-colour);
+}
+
+/* Requirement checklist under the password field. */
+.password-rules {
+    display: grid;
+    gap: 0.375rem 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 0.25rem;
+}
+
+.password-rules li {
+    display: flex;
+    align-items: center;
+    gap: 0.4375rem;
+    font-size: 0.75rem;
+    color: var(--color-faint);
+    transition: color var(--duration-fast) var(--ease-out-soft);
+}
+
+.password-rules li svg {
+    width: 0.8125rem;
+    height: 0.8125rem;
+    flex: none;
+}
+
+.password-rules li.is-met {
+    color: var(--color-accent-soft);
+}
+
+/* ==========================================================================
+   One-time code
+   ========================================================================== */
+
+.otp {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.otp__input {
+    width: 100%;
+    min-width: 0;
+    padding: 0.75rem 0;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0;
+}
+
+@media (min-width: 480px) {
+    .otp {
+        gap: 0.625rem;
+    }
+
+    .otp__input {
+        padding-block: 0.875rem;
+        font-size: 1.375rem;
+    }
+}
+
+.otp__gap {
+    flex: none;
+    align-self: center;
+    width: 0.75rem;
+    height: 1px;
+    background-color: var(--color-line);
+}
+
+/* ==========================================================================
+   Brand panel
+   ========================================================================== */
+
+.auth__aside {
+    position: relative;
+    display: none;
+    align-content: center;
+    padding: 3rem;
+    isolation: isolate;
+    overflow: hidden;
+    border-left: 1px solid var(--hairline);
+    background-color: var(--color-surface);
+}
+
+@media (min-width: 1024px) {
+    .auth__aside {
+        display: grid;
+    }
+}
+
+@media (min-width: 1280px) {
+    .auth__aside {
+        padding: 4rem;
+    }
+}
+
+.auth-aside__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 30rem;
+    margin-inline: auto;
+}
+
+.auth-aside__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.875rem, 1.2rem + 1.6vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.14;
+    letter-spacing: -0.03em;
+    color: var(--color-title);
+    max-width: 16ch;
+}
+
+.auth-aside__text {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-muted);
+    max-width: 34ch;
+}
+
+.auth-aside__proof {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding-top: 1.5rem;
+    margin-top: 0.25rem;
+    border-top: 1px solid var(--hairline);
+    width: 100%;
+}
+
+.auth-aside__proof-text {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-muted);
+}
+
+.auth-aside__proof-text strong {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--color-title);
+}

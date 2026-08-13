@@ -79,6 +79,7 @@ class MenuRenderService
         foreach ($items as $item) {
             if ($item->parent_id) {
                 $childrenMap[$item->parent_id][] = $item;
+
                 continue;
             }
 

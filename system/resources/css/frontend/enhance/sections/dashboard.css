@@ -1,0 +1,1004 @@
+/**
+ * Dashboard shell + enhancement studio
+ * ---------------------------------------------------------------------------
+ * The studio is the working build of the landing page's hero mock: same
+ * two-column split, same control rail, but every control is live and the
+ * preview reflects real state instead of a fixed illustration.
+ * ---------------------------------------------------------------------------
+ */
+
+/* ==========================================================================
+   Shell
+   ========================================================================== */
+
+.dash {
+    display: grid;
+    min-height: 100vh;
+    min-height: 100dvh;
+    grid-template-columns: minmax(0, 1fr);
+    background-color: var(--color-ink);
+}
+
+@media (min-width: 1024px) {
+    .dash {
+        grid-template-columns: 16.5rem minmax(0, 1fr);
+    }
+}
+
+/* --- Sidebar ------------------------------------------------------------- */
+/**
+ * A drawer below 1024px and a static column above it. The transform is on the
+ * panel rather than a wrapper so the fixed positioning does not leak into the
+ * desktop layout.
+ */
+.dash__sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    width: 16.5rem;
+    max-width: 82vw;
+    border-right: 1px solid var(--hairline);
+    background-color: var(--color-surface);
+    transform: translateX(-100%);
+    transition: transform var(--duration-base) var(--ease-out-soft);
+}
+
+.dash__sidebar.is-open {
+    transform: none;
+    box-shadow: var(--shadow-lift);
+}
+
+@media (min-width: 1024px) {
+    .dash__sidebar {
+        position: sticky;
+        top: 0;
+        height: 100dvh;
+        max-width: none;
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+.dash__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background-color: rgb(9 9 11 / 0.7);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+@media (min-width: 1024px) {
+    .dash__scrim {
+        display: none;
+    }
+}
+
+.dash__brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex: none;
+    height: 4rem;
+    padding-inline: 1.25rem;
+    border-bottom: 1px solid var(--hairline);
+}
+
+.dash__nav {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 1.25rem 0.875rem;
+}
+
+.dash__nav-group + .dash__nav-group {
+    margin-top: 1.5rem;
+}
+
+.dash__nav-title {
+    padding-inline: 0.625rem;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-faint);
+}
+
+.dash__nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.6875rem;
+    padding: 0.5625rem 0.625rem;
+    border-radius: 11px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    transition:
+        color var(--duration-fast) var(--ease-out-soft),
+        background-color var(--duration-fast) var(--ease-out-soft);
+}
+
+.nav-item svg {
+    width: 1.0625rem;
+    height: 1.0625rem;
+    flex: none;
+    color: var(--color-faint);
+    transition: color var(--duration-fast) var(--ease-out-soft);
+}
+
+.nav-item:hover {
+    color: var(--color-title);
+    background-color: rgb(250 250 250 / 0.045);
+}
+
+.nav-item:hover svg {
+    color: var(--color-muted);
+}
+
+.nav-item.is-active {
+    color: var(--color-title);
+    background-image: linear-gradient(100deg, rgb(91 95 248 / 0.22), rgb(124 58 237 / 0.06));
+    box-shadow: inset 0 0 0 1px rgb(91 95 248 / 0.24);
+}
+
+.nav-item.is-active svg {
+    color: var(--color-primary-soft);
+}
+
+.nav-item__badge {
+    margin-left: auto;
+    flex: none;
+}
+
+/* --- Credit meter in the sidebar foot ------------------------------------ */
+.dash__aside-foot {
+    flex: none;
+    padding: 0.875rem;
+    border-top: 1px solid var(--hairline);
+}
+
+.credit-card {
+    padding: 0.875rem;
+    border-radius: 16px;
+    border: 1px solid rgb(91 95 248 / 0.24);
+    background-image: var(--gradient-brand-soft);
+    background-color: var(--color-card);
+}
+
+.credit-card__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.625rem;
+}
+
+.credit-card__label {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+}
+
+.credit-card__value {
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-title);
+    font-variant-numeric: tabular-nums;
+}
+
+.credit-card__note {
+    margin-top: 0.625rem;
+    font-size: 0.6875rem;
+    color: var(--color-faint);
+}
+
+/* ==========================================================================
+   Main column
+   ========================================================================== */
+
+.dash__main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.dash__topbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: none;
+    height: 4rem;
+    padding-inline: 1rem;
+    border-bottom: 1px solid var(--hairline);
+    background-color: rgb(9 9 11 / 0.82);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+
+@media (min-width: 1024px) {
+    .dash__topbar {
+        padding-inline: 1.75rem;
+    }
+}
+
+.dash__burger {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: none;
+    border-radius: 10px;
+    border: 1px solid var(--hairline);
+    color: var(--color-muted);
+}
+
+.dash__burger:hover {
+    color: var(--color-title);
+    background-color: rgb(250 250 250 / 0.06);
+}
+
+@media (min-width: 1024px) {
+    .dash__burger {
+        display: none;
+    }
+}
+
+/* Search grows into the space the nav actions leave behind. */
+.dash__search {
+    position: relative;
+    flex: 1 1 auto;
+    max-width: 26rem;
+}
+
+.dash__search .input {
+    padding-block: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.dash__search kbd {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    translate: 0 -50%;
+    padding: 0.125rem 0.375rem;
+    border-radius: 6px;
+    border: 1px solid var(--hairline);
+    background-color: var(--color-card);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    color: var(--color-faint);
+    pointer-events: none;
+}
+
+@media (max-width: 639px) {
+    .dash__search kbd {
+        display: none;
+    }
+}
+
+.dash__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.icon-btn {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: none;
+    border-radius: 10px;
+    border: 1px solid var(--hairline);
+    color: var(--color-muted);
+    transition: all var(--duration-fast) var(--ease-out-soft);
+}
+
+.icon-btn:hover {
+    color: var(--color-title);
+    background-color: rgb(250 250 250 / 0.06);
+    border-color: var(--color-line);
+}
+
+.icon-btn svg {
+    width: 1.0625rem;
+    height: 1.0625rem;
+}
+
+.icon-btn__dot {
+    position: absolute;
+    top: 0.375rem;
+    right: 0.4375rem;
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border-radius: 50%;
+    background-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-ink);
+}
+
+.user-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--hairline);
+    transition: all var(--duration-fast) var(--ease-out-soft);
+}
+
+.user-chip:hover {
+    background-color: rgb(250 250 250 / 0.06);
+    border-color: var(--color-line);
+}
+
+.user-chip img {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    flex: none;
+}
+
+.user-chip__name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-title);
+    white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+    .user-chip__name {
+        display: none;
+    }
+}
+
+.user-chip svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--color-faint);
+}
+
+/* --- Content ------------------------------------------------------------- */
+.dash__content {
+    flex: 1 1 auto;
+    padding: 1.5rem 1rem 3rem;
+}
+
+@media (min-width: 1024px) {
+    .dash__content {
+        padding: 2rem 1.75rem 4rem;
+    }
+}
+
+.dash__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.dash__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.3rem + 0.7vw, 1.875rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--color-title);
+}
+
+.dash__subtitle {
+    margin-top: 0.375rem;
+    font-size: 0.9375rem;
+    color: var(--color-muted);
+}
+
+.dash__section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.dash__section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--color-title);
+}
+
+.dash__section-title svg {
+    width: 1.0625rem;
+    height: 1.0625rem;
+    color: var(--color-primary-soft);
+}
+
+/* ==========================================================================
+   Studio — the working hero mock
+   ========================================================================== */
+
+.studio {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+}
+
+@media (min-width: 1024px) {
+    .studio {
+        grid-template-columns: minmax(0, 2.3fr) minmax(0, 1fr);
+        gap: 1.25rem;
+    }
+}
+
+.studio__stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border-radius: var(--radius-panel);
+    border: 1px solid var(--glass-border-strong);
+    background-color: rgb(18 18 21 / 0.9);
+    box-shadow:
+        inset 0 1px 0 0 rgb(255 255 255 / 0.06),
+        0 30px 80px -40px rgb(0 0 0 / 0.9);
+    overflow: hidden;
+}
+
+.studio__bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: none;
+    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid var(--hairline);
+    background-color: rgb(9 9 11 / 0.5);
+}
+
+.studio__file {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.studio__file svg {
+    width: 0.9375rem;
+    height: 0.9375rem;
+    flex: none;
+    color: var(--color-primary-soft);
+}
+
+.studio__file-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-title);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.studio__file-meta {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-faint);
+}
+
+@media (max-width: 559px) {
+    .studio__file-meta {
+        display: none;
+    }
+}
+
+.studio__bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-left: auto;
+}
+
+/* The canvas: holds the dropzone, the running state and the result, one at a
+   time. A minimum height stops the panel collapsing between states. */
+.studio__canvas {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1 1 auto;
+    min-height: 20rem;
+    padding: 0.875rem;
+}
+
+@media (min-width: 768px) {
+    .studio__canvas {
+        min-height: 26rem;
+    }
+}
+
+@media (min-width: 1280px) {
+    .studio__canvas {
+        min-height: 31rem;
+    }
+}
+
+.studio__dropzone {
+    flex: 1 1 auto;
+    min-height: 17rem;
+}
+
+/**
+ * Drag overlay. Because the canvas accepts a drop in every state, this covers
+ * whatever is on screen — a finished comparison, a preview, a running job —
+ * so the target is unambiguous wherever the visitor lets go.
+ */
+.studio__veil {
+    position: absolute;
+    inset: 0.875rem;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.875rem;
+    border-radius: 20px;
+    border: 1.5px dashed var(--color-primary);
+    background-color: rgb(9 9 11 / 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    pointer-events: none;
+}
+
+/* --- Running state ------------------------------------------------------- */
+.studio__running {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.125rem;
+    flex: 1 1 auto;
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.studio__running-preview {
+    position: relative;
+    width: 100%;
+    max-width: 20rem;
+    aspect-ratio: 4 / 3;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+}
+
+.studio__running-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.7) brightness(0.75);
+}
+
+.studio__stage-name {
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-title);
+}
+
+.studio__progress {
+    width: 100%;
+    max-width: 22rem;
+}
+
+.studio__progress-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-faint);
+}
+
+/* --- Loaded, not yet rendered -------------------------------------------- */
+.studio__preview {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.875rem;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.studio__preview img {
+    max-width: 100%;
+    max-height: 24rem;
+    border-radius: 18px;
+    border: 1px solid var(--hairline);
+    object-fit: contain;
+}
+
+.studio__preview-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+}
+
+.studio__preview-hint svg {
+    width: 0.9375rem;
+    height: 0.9375rem;
+    color: var(--color-primary-soft);
+}
+
+/* --- Result -------------------------------------------------------------- */
+.studio__result {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* The frame drives its own height from an aspect ratio by default. Here the
+   canvas dictates the height instead, so the frame has to stretch into it —
+   otherwise it stops at its minimum and leaves a band of empty panel below. */
+.studio__result .compare {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+}
+
+.studio__result .compare__frame {
+    flex: 1 1 auto;
+    min-height: 17rem;
+    aspect-ratio: auto;
+}
+
+.studio__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem 1rem;
+    flex: none;
+    padding: 0.75rem 0.875rem;
+    border-top: 1px solid var(--hairline);
+    background-color: rgb(9 9 11 / 0.5);
+}
+
+.studio__foot-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem 0.875rem;
+    font-size: 0.75rem;
+    color: var(--color-faint);
+}
+
+.studio__foot-meta strong {
+    color: var(--color-body);
+    font-weight: 600;
+}
+
+.studio__foot-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+/* ==========================================================================
+   Control rail — the live version of the mock's side panel
+   ========================================================================== */
+
+.studio__rail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1.125rem;
+    border-radius: var(--radius-panel);
+    border: 1px solid var(--hairline);
+    background-color: var(--color-surface);
+}
+
+.studio__rail-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--hairline);
+}
+
+.studio__rail-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-title);
+}
+
+.studio__rail-title svg {
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-primary-soft);
+}
+
+.studio__rail-submit {
+    margin-top: 1rem;
+}
+
+.studio__cost {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: 12px;
+    border: 1px solid var(--hairline);
+    background-color: rgb(9 9 11 / 0.5);
+    font-size: 0.75rem;
+    color: var(--color-muted);
+}
+
+.studio__cost strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3125rem;
+    font-family: var(--font-display);
+    color: var(--color-title);
+}
+
+.studio__cost svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--color-warning);
+}
+
+/* The slider's live read-out. */
+.control-row__value {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-primary-soft);
+    font-variant-numeric: tabular-nums;
+}
+
+.control-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-block: 0.75rem;
+    border-bottom: 1px solid var(--hairline);
+}
+
+/* ==========================================================================
+   Recent enhancements
+   ========================================================================== */
+
+.job-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}
+
+.job-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--hairline);
+    background-color: var(--color-surface);
+    transition:
+        transform var(--duration-base) var(--ease-out-soft),
+        border-color var(--duration-base) var(--ease-out-soft),
+        box-shadow var(--duration-base) var(--ease-out-soft);
+}
+
+.job-card:hover {
+    transform: translateY(-4px);
+    border-color: rgb(91 95 248 / 0.38);
+    box-shadow: var(--shadow-lift);
+}
+
+.job-card__media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px) 0 0;
+    background-color: var(--color-card);
+    border-bottom: 1px solid var(--hairline);
+}
+
+.job-card__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    color: transparent;
+    transition: transform 600ms var(--ease-out-soft);
+}
+
+.job-card:hover .job-card__media img {
+    transform: scale(1.05);
+}
+
+.job-card__status {
+    position: absolute;
+    top: 0.625rem;
+    left: 0.625rem;
+    z-index: 2;
+}
+
+/* Hover-revealed actions, anchored bottom-right over the thumbnail. */
+.job-card__tools {
+    position: absolute;
+    inset: auto 0.625rem 0.625rem auto;
+    z-index: 2;
+    display: flex;
+    gap: 0.375rem;
+    opacity: 0;
+    translate: 0 6px;
+    transition:
+        opacity var(--duration-base) var(--ease-out-soft),
+        translate var(--duration-base) var(--ease-out-soft);
+}
+
+.job-card:hover .job-card__tools,
+.job-card:focus-within .job-card__tools {
+    opacity: 1;
+    translate: 0 0;
+}
+
+.job-card__tool {
+    display: grid;
+    place-items: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    border-radius: 9px;
+    border: 1px solid var(--glass-border-strong);
+    background-color: rgb(9 9 11 / 0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #fff;
+    transition: background-color var(--duration-fast) var(--ease-out-soft);
+}
+
+.job-card__tool:hover {
+    background-color: rgb(91 95 248 / 0.8);
+}
+
+.job-card__tool svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.job-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4375rem;
+    padding: 0.875rem;
+}
+
+.job-card__name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-title);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.job-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3125rem 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-faint);
+}
+
+.job-card__dot {
+    width: 0.1875rem;
+    height: 0.1875rem;
+    border-radius: 50%;
+    background-color: currentcolor;
+    opacity: 0.6;
+}
+
+/* In-flight jobs carry a progress bar in place of the metadata row. */
+.job-card__progress {
+    margin-top: 0.125rem;
+}
+
+/* ==========================================================================
+   Stat strip
+   ========================================================================== */
+
+.dash-stats {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 900px) {
+    .dash-stats {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.dash-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 1rem 1.125rem;
+    border-radius: 18px;
+    border: 1px solid var(--hairline);
+    background-color: var(--color-surface);
+}
+
+.dash-stat__icon {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: none;
+    border-radius: 12px;
+    border: 1px solid rgb(91 95 248 / 0.26);
+    background-image: linear-gradient(150deg, rgb(91 95 248 / 0.24), rgb(124 58 237 / 0.06));
+    color: var(--color-primary-soft);
+}
+
+.dash-stat__icon svg {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+.dash-stat__icon-accent {
+    border-color: rgb(34 197 94 / 0.28);
+    background-image: linear-gradient(150deg, rgb(34 197 94 / 0.22), rgb(34 197 94 / 0.05));
+    color: var(--color-accent-soft);
+}
+
+.dash-stat__value {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-title);
+    font-variant-numeric: tabular-nums;
+}
+
+.dash-stat__label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-faint);
+}

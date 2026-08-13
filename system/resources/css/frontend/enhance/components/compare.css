@@ -1,0 +1,318 @@
+/**
+ * Before / After Image Comparison Slider
+ * ---------------------------------------------------------------------------
+ * Split position lives in the `--pos` custom property, written by
+ * js/modules/compare.js on the root element. Pointer drag, click-to-seek and
+ * arrow keys are all supported; the handle is a real <input type="range">
+ * wrapper so screen readers announce the split percentage.
+ * ---------------------------------------------------------------------------
+ */
+
+.compare {
+    --pos: 50%;
+    position: relative;
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    background-color: var(--color-card);
+    border: 1px solid var(--glass-border-strong);
+    box-shadow: var(--shadow-lift);
+    user-select: none;
+    touch-action: pan-y;
+    isolation: isolate;
+    cursor: ew-resize;
+}
+
+.compare__frame {
+    position: relative;
+    aspect-ratio: var(--compare-ratio, 4 / 3);
+    width: 100%;
+}
+
+.compare__layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* The two layers sit exactly on top of one another, so while a lazy image
+       is still in flight both alt strings would paint over each other and read
+       as a broken component. Alt text belongs to assistive tech, not to the
+       visual layer — it stays in the accessibility tree, just not on screen.
+       The frame's own background shows through as a neutral placeholder. */
+    color: transparent;
+}
+
+/* The enhanced result leads on the LEFT — it is the thing being sold, so it
+   gets the first-read position. Dragging right grows the enhanced side. */
+.compare__layer-after {
+    clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+    will-change: clip-path;
+}
+
+.compare.is-dragging .compare__layer-after {
+    transition: none;
+}
+
+/* --- Handle ------------------------------------------------------------- */
+.compare__handle {
+    position: absolute;
+    inset-block: 0;
+    left: var(--pos);
+    width: 2px;
+    translate: -50% 0;
+    background-color: rgb(255 255 255 / 0.9);
+    box-shadow: 0 0 22px 2px rgb(91 95 248 / 0.75);
+    z-index: 3;
+    pointer-events: none;
+}
+
+.compare__grip {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* Centring and the hover/drag scale must live on the SAME property.
+       Using the `translate` shorthand here and `transform: translate(…)` in
+       the state rules would compose, applying the centring twice and kicking
+       the grip half its size up and to the left. */
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 2px solid rgb(255 255 255 / 0.85);
+    background-color: rgb(9 9 11 / 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;
+    box-shadow:
+        0 8px 26px rgb(0 0 0 / 0.55),
+        0 0 0 6px rgb(91 95 248 / 0.16);
+    transition:
+        transform var(--duration-base) var(--ease-out-soft),
+        box-shadow var(--duration-base) var(--ease-out-soft);
+    pointer-events: none;
+}
+
+.compare:hover .compare__grip {
+    transform: translate(-50%, -50%) scale(1.08);
+    box-shadow:
+        0 10px 30px rgb(0 0 0 / 0.6),
+        0 0 0 10px rgb(91 95 248 / 0.2);
+}
+
+.compare.is-dragging .compare__grip {
+    transform: translate(-50%, -50%) scale(0.94);
+}
+
+.compare__grip svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* --- Accessible range input (visually hidden, still operable) ------------ */
+.compare__range {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    margin: 0;
+    cursor: ew-resize;
+    z-index: 4;
+}
+
+.compare__range:focus-visible + .compare__handle .compare__grip {
+    outline: 3px solid var(--color-primary-soft);
+    outline-offset: 4px;
+}
+
+/* --- Corner labels ------------------------------------------------------ */
+.compare__tag {
+    position: absolute;
+    top: 1rem;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--glass-border-strong);
+    background-color: rgb(9 9 11 / 0.62);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff;
+    pointer-events: none;
+}
+
+/* Labels follow the layers: enhanced on the left, original on the right. */
+.compare__tag-after {
+    left: 1rem;
+    border-color: rgb(34 197 94 / 0.42);
+    color: var(--color-accent-soft);
+}
+
+.compare__tag-before {
+    right: 1rem;
+}
+
+.compare__tag svg {
+    width: 0.8125rem;
+    height: 0.8125rem;
+}
+
+/* --- Resolution readouts ------------------------------------------------ */
+.compare__meta {
+    position: absolute;
+    bottom: 1rem;
+    z-index: 2;
+    padding: 0.3125rem 0.6875rem;
+    border-radius: 10px;
+    background-color: rgb(9 9 11 / 0.66);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: rgb(255 255 255 / 0.82);
+    pointer-events: none;
+}
+
+.compare__meta-after {
+    left: 1rem;
+    color: var(--color-accent-soft);
+    border-color: rgb(34 197 94 / 0.3);
+}
+
+.compare__meta-before {
+    right: 1rem;
+}
+
+/* --- Hint pill ---------------------------------------------------------- */
+.compare__hint {
+    position: absolute;
+    left: 50%;
+    top: 1rem;
+    translate: -50% 0;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    padding: 0.375rem 0.8125rem;
+    border-radius: var(--radius-pill);
+    background-color: rgb(9 9 11 / 0.66);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: rgb(255 255 255 / 0.72);
+    pointer-events: none;
+    transition: opacity var(--duration-base) var(--ease-out-soft);
+}
+
+.compare.is-dragging .compare__hint {
+    opacity: 0;
+}
+
+.compare__hint svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+/* --- Aspect-ratio modifiers --------------------------------------------- */
+.compare-square {
+    --compare-ratio: 1 / 1;
+}
+
+.compare-wide {
+    --compare-ratio: 16 / 9;
+}
+
+/**
+ * Matches the portrait source so the stacked mobile layout crops as little as
+ * possible; on desktop the media-lead showcase overrides the ratio with a
+ * full-height frame.
+ *
+ * The frame's ratio changes with the copy column's height, so it is sometimes
+ * wider than the source. Anchoring to the top means that surplus is always
+ * taken off the bottom of the photo rather than off the subjects' heads.
+ */
+.compare-showcase {
+    --compare-ratio: 13 / 15;
+}
+
+.compare-showcase .compare__layer {
+    object-position: 50% 0;
+}
+
+/* Hero preview — fills the height of the control rail beside it. */
+.compare-hero {
+    --compare-ratio: 4 / 3;
+}
+
+@media (min-width: 560px) {
+    .compare-hero {
+        --compare-ratio: 16 / 13;
+        height: 100%;
+    }
+
+    .compare-hero .compare__frame {
+        height: 100%;
+        aspect-ratio: auto;
+        min-height: 15rem;
+    }
+}
+
+/* The full-width frame needs real height or the preview reads as a letterbox. */
+@media (min-width: 1024px) {
+    .compare-hero .compare__frame {
+        min-height: 27rem;
+    }
+}
+
+/* --- Zoom loupe variant ------------------------------------------------- */
+.compare-zoom .compare__layer {
+    transform: scale(var(--compare-zoom, 1));
+    transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
+    transition: transform var(--duration-base) var(--ease-out-soft);
+}
+
+/* --- Static side-by-side quality grid ----------------------------------- */
+.quality-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.quality-tile {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    aspect-ratio: 1 / 1;
+}
+
+.quality-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.quality-tile__label {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 1.5rem 0.875rem 0.75rem;
+    background-image: linear-gradient(to top, rgb(9 9 11 / 0.9), transparent);
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+}

@@ -1,0 +1,318 @@
+/**
+ * Buttons
+ * Variants: primary · secondary · ghost · outline · soft · glass · danger
+ * Sizes:    sm · (default) · lg · xl · icon
+ * Add `data-ripple` for the JS ripple micro-interaction.
+ */
+
+.btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8125rem 1.5rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    isolation: isolate;
+    overflow: hidden;
+    transition:
+        transform var(--duration-fast) var(--ease-out-soft),
+        box-shadow var(--duration-base) var(--ease-out-soft),
+        background-color var(--duration-fast) var(--ease-out-soft),
+        border-color var(--duration-fast) var(--ease-out-soft),
+        color var(--duration-fast) var(--ease-out-soft),
+        opacity var(--duration-fast) var(--ease-out-soft);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(0) scale(0.985);
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'],
+.btn.is-disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.btn .icon,
+.btn svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex: none;
+    transition: transform var(--duration-base) var(--ease-out-soft);
+}
+
+/* --- Sizes -------------------------------------------------------------- */
+.btn-sm {
+    padding: 0.5625rem 1.0625rem;
+    font-size: 0.8125rem;
+}
+
+.btn-sm .icon,
+.btn-sm svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.btn-lg {
+    padding: 1rem 1.875rem;
+    font-size: 1rem;
+}
+
+.btn-xl {
+    padding: 1.1875rem 2.375rem;
+    font-size: 1.0625rem;
+}
+
+.btn-xl .icon,
+.btn-xl svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.btn-icon {
+    padding: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-field);
+}
+
+.btn-icon-sm {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border-radius: 10px;
+}
+
+.btn-block {
+    display: flex;
+    width: 100%;
+}
+
+/* --- Primary ------------------------------------------------------------ */
+.btn-primary {
+    color: #fff;
+    background-image: var(--gradient-brand);
+    background-size: 180% 180%;
+    background-position: 0% 50%;
+    box-shadow:
+        0 1px 0 0 rgb(255 255 255 / 0.16) inset,
+        0 14px 34px -14px rgb(91 95 248 / 0.9);
+    transition:
+        transform var(--duration-fast) var(--ease-out-soft),
+        box-shadow var(--duration-base) var(--ease-out-soft),
+        background-position var(--duration-slow) var(--ease-out-soft);
+}
+
+.btn-primary:hover {
+    background-position: 100% 50%;
+    box-shadow:
+        0 1px 0 0 rgb(255 255 255 / 0.22) inset,
+        0 20px 46px -16px rgb(91 95 248 / 1);
+}
+
+/* Travelling sheen on hover. */
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--gradient-sheen);
+    background-size: 220% 100%;
+    background-position: 180% 0;
+    opacity: 0;
+    transition:
+        background-position var(--duration-slow) var(--ease-out-soft),
+        opacity var(--duration-fast) linear;
+}
+
+.btn-primary:hover::after {
+    opacity: 1;
+    background-position: -60% 0;
+}
+
+/* --- Secondary (glass) -------------------------------------------------- */
+.btn-secondary {
+    color: var(--color-title);
+    background-color: var(--glass-bg);
+    border-color: var(--glass-border-strong);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    box-shadow: var(--shadow-soft);
+}
+
+.btn-secondary:hover {
+    background-color: rgb(63 63 70 / 0.6);
+    border-color: rgb(250 250 250 / 0.22);
+}
+
+/* --- Outline ------------------------------------------------------------ */
+.btn-outline {
+    color: var(--color-title);
+    border-color: var(--color-line);
+    background-color: transparent;
+}
+
+.btn-outline:hover {
+    border-color: var(--color-primary);
+    background-color: rgb(91 95 248 / 0.1);
+    color: #fff;
+}
+
+/* --- Soft (tinted) ------------------------------------------------------ */
+.btn-soft {
+    color: var(--color-primary-soft);
+    background-color: rgb(91 95 248 / 0.14);
+    border-color: rgb(91 95 248 / 0.24);
+}
+
+.btn-soft:hover {
+    background-color: rgb(91 95 248 / 0.22);
+    color: #fff;
+}
+
+.btn-soft-accent {
+    color: var(--color-accent-soft);
+    background-color: rgb(34 197 94 / 0.14);
+    border-color: rgb(34 197 94 / 0.26);
+}
+
+.btn-soft-accent:hover {
+    background-color: rgb(34 197 94 / 0.22);
+    color: #fff;
+}
+
+/* --- Ghost -------------------------------------------------------------- */
+.btn-ghost {
+    color: var(--color-muted);
+    background-color: transparent;
+}
+
+.btn-ghost:hover {
+    color: var(--color-title);
+    background-color: rgb(250 250 250 / 0.06);
+}
+
+/* --- Danger ------------------------------------------------------------- */
+.btn-danger {
+    color: #fff;
+    background-color: var(--color-danger);
+    box-shadow: 0 14px 34px -16px rgb(239 68 68 / 0.9);
+}
+
+.btn-danger:hover {
+    background-color: #dc2626;
+}
+
+.btn-danger-soft {
+    color: #fca5a5;
+    background-color: rgb(239 68 68 / 0.12);
+    border-color: rgb(239 68 68 / 0.24);
+}
+
+.btn-danger-soft:hover {
+    background-color: rgb(239 68 68 / 0.2);
+    color: #fff;
+}
+
+/* --- Modifiers ---------------------------------------------------------- */
+.btn-arrow:hover .icon-arrow {
+    transform: translateX(3px);
+}
+
+.btn-glow {
+    box-shadow:
+        0 1px 0 0 rgb(255 255 255 / 0.16) inset,
+        0 14px 34px -14px rgb(91 95 248 / 0.9),
+        0 0 0 0 rgb(91 95 248 / 0.55);
+    animation: pulse-glow 3.4s var(--ease-in-out-soft) infinite;
+}
+
+/* --- Ripple (injected by js/modules/ripple.js) -------------------------- */
+.btn-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgb(255 255 255 / 0.42);
+    transform: scale(0);
+    opacity: 0.75;
+    pointer-events: none;
+    animation: ripple 620ms var(--ease-out-soft) forwards;
+    z-index: 0;
+}
+
+/* --- Loading state ------------------------------------------------------ */
+.btn.is-loading {
+    pointer-events: none;
+    color: transparent;
+}
+
+.btn.is-loading::before {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 1.125rem;
+    height: 1.125rem;
+    margin: -0.5625rem 0 0 -0.5625rem;
+    border: 2px solid rgb(255 255 255 / 0.32);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 720ms linear infinite;
+}
+
+/* --- Link-style button -------------------------------------------------- */
+.btn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-primary-soft);
+}
+
+.btn-link:hover {
+    color: var(--color-title);
+}
+
+.btn-link svg {
+    width: 1rem;
+    height: 1rem;
+    transition: transform var(--duration-base) var(--ease-out-soft);
+}
+
+.btn-link:hover svg {
+    transform: translateX(3px);
+}
+
+/* Inline scale — sits beside a field label without out-weighing it. */
+.btn-link-sm {
+    font-size: 0.8125rem;
+}
+
+.btn-link-sm svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+/* --- Button group ------------------------------------------------------- */
+.btn-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border-radius: var(--radius-pill);
+    background-color: var(--color-surface);
+    border: 1px solid var(--hairline);
+}

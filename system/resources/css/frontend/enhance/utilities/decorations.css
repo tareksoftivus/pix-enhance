@@ -1,0 +1,267 @@
+/**
+ * Background decorations
+ * Blurred gradient blobs, grid overlays, noise texture, spotlights and
+ * dividers. All decorative layers are aria-hidden and pointer-events: none.
+ */
+
+.decor {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* --- Blurred gradient blobs --------------------------------------------- */
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.55;
+    will-change: transform;
+}
+
+.blob-primary {
+    background-image: radial-gradient(closest-side, rgb(91 95 248 / 0.85), transparent);
+}
+
+.blob-secondary {
+    background-image: radial-gradient(closest-side, rgb(124 58 237 / 0.8), transparent);
+}
+
+.blob-accent {
+    background-image: radial-gradient(closest-side, rgb(34 197 94 / 0.55), transparent);
+}
+
+.blob-sm {
+    width: 22rem;
+    height: 22rem;
+}
+
+.blob-md {
+    width: 34rem;
+    height: 34rem;
+}
+
+.blob-lg {
+    width: 48rem;
+    height: 48rem;
+}
+
+/* Hero blob placements. */
+.blob-hero-1 {
+    top: -18rem;
+    left: -12rem;
+}
+
+.blob-hero-2 {
+    top: -10rem;
+    right: -14rem;
+    opacity: 0.42;
+}
+
+.blob-hero-3 {
+    bottom: -22rem;
+    left: 28%;
+    opacity: 0.3;
+}
+
+/* Generic section blob placements. */
+.blob-section-right {
+    top: -10rem;
+    right: -16rem;
+    opacity: 0.26;
+}
+
+.blob-section-left {
+    bottom: -14rem;
+    left: -18rem;
+    opacity: 0.22;
+}
+
+.blob-section-center {
+    top: -14rem;
+    left: 50%;
+    translate: -50% 0;
+    opacity: 0.2;
+}
+
+/* --- Descending glow dome ------------------------------------------------ */
+/**
+ * One large circle hung above the section so only its lower arc reaches down
+ * into view — a half-moon of light coming down from above. The gradient is
+ * weighted toward the rim rather than the centre, which is what makes the
+ * curved edge read as an arc instead of a formless haze.
+ *
+ * Single layer, animating only transform and opacity, so it stays on the
+ * compositor. Purely decorative — `.decor` is aria-hidden, pointer-events: none.
+ */
+.glow-orb {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: min(106rem, 195vw);
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    pointer-events: none;
+}
+
+.glow-orb::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    /* Broad shoulder rather than a narrow spike: the light ramps from 38% out
+       to 92% of the radius, so it spreads across the section while the rim
+       still carries enough weight to describe the curve. */
+    background-image: radial-gradient(
+        closest-side,
+        rgb(91 95 248 / 0.05) 0%,
+        rgb(91 95 248 / 0.13) 38%,
+        rgb(124 58 237 / 0.24) 66%,
+        rgb(124 58 237 / 0.28) 82%,
+        rgb(124 58 237 / 0.1) 92%,
+        transparent 100%
+    );
+    filter: blur(58px);
+    animation: orb-breathe 13s var(--ease-in-out-soft) infinite;
+    will-change: transform, opacity;
+}
+
+/* Hero tuning: how far the dome hangs into the section. */
+.glow-orb-hero {
+    translate: -50% -47%;
+}
+
+/* Auth brand panel: a single column, so the dome is scaled to the panel
+   rather than the viewport. */
+.glow-orb-auth {
+    width: min(50rem, 150%);
+    translate: -50% -36%;
+}
+
+/* --- Grid overlays ------------------------------------------------------ */
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgb(250 250 250 / 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(250 250 250 / 0.035) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(75% 65% at 50% 30%, #000, transparent);
+    mask-image: radial-gradient(75% 65% at 50% 30%, #000, transparent);
+    pointer-events: none;
+}
+
+.grid-overlay-fine {
+    background-size: 32px 32px;
+}
+
+.dot-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgb(250 250 250 / 0.09) 1px, transparent 1px);
+    background-size: 26px 26px;
+    -webkit-mask-image: radial-gradient(70% 60% at 50% 40%, #000, transparent);
+    mask-image: radial-gradient(70% 60% at 50% 40%, #000, transparent);
+    pointer-events: none;
+}
+
+/* --- Noise texture ------------------------------------------------------ */
+.noise-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.045;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Global grain — applied once on <body> via .has-grain. */
+.has-grain::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* --- Floating circles / rings ------------------------------------------- */
+.ring-decor {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgb(250 250 250 / 0.06);
+    pointer-events: none;
+}
+
+.ring-decor-lg {
+    width: 46rem;
+    height: 46rem;
+}
+
+.ring-decor-md {
+    width: 30rem;
+    height: 30rem;
+}
+
+.ring-decor-sm {
+    width: 18rem;
+    height: 18rem;
+}
+
+.ring-decor-glow {
+    border-color: rgb(91 95 248 / 0.16);
+    box-shadow: inset 0 0 60px -20px rgb(91 95 248 / 0.35);
+}
+
+/* --- Spotlight / glow --------------------------------------------------- */
+.spotlight {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+        60% 50% at 50% 0%,
+        rgb(91 95 248 / 0.2),
+        transparent 65%
+    );
+    pointer-events: none;
+}
+
+.glow-line {
+    position: relative;
+}
+
+.glow-line::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background-image: linear-gradient(
+        90deg,
+        transparent,
+        rgb(91 95 248 / 0.7) 20%,
+        rgb(124 58 237 / 0.7) 80%,
+        transparent
+    );
+}
+
+/* --- Section dividers --------------------------------------------------- */
+.divider-fade {
+    height: 1px;
+    border: 0;
+    background-image: linear-gradient(90deg, transparent, var(--hairline) 30%, var(--hairline) 70%, transparent);
+}
+
+/* --- Bordered surface treatments ---------------------------------------- */
+.surface-panel {
+    position: relative;
+    background-color: var(--color-surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-panel);
+    overflow: hidden;
+}
+
+.surface-inset {
+    background-image: linear-gradient(180deg, rgb(250 250 250 / 0.03), transparent 40%);
+}

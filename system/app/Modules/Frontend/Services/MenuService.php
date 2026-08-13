@@ -6,7 +6,6 @@ use App\Modules\Frontend\Models\FrontendMenu;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 class MenuService
 {

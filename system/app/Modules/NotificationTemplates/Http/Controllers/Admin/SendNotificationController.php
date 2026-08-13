@@ -68,7 +68,7 @@ class SendNotificationController extends Controller implements HasMiddleware
         $queuedCount = $this->dispatchService->dispatch($request->validated());
 
         return redirect()
-            ->route('admin.notification-send.create') 
+            ->route('admin.notification-send.create')
             ->with('success', __('Notification queued for :count recipients.', ['count' => $queuedCount]));
     }
 }

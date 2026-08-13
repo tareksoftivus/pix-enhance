@@ -1,0 +1,547 @@
+/**
+ * Animations — 100% CSS
+ * ---------------------------------------------------------------------------
+ * Scroll-triggered entrances use `[data-reveal]`. The JS module only toggles
+ * `.is-revealed` via IntersectionObserver — all motion is declared here, so
+ * with JS disabled the fallback below still shows the content.
+ * ---------------------------------------------------------------------------
+ */
+
+/* ==========================================================================
+   Keyframes
+   ========================================================================== */
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-down {
+    from {
+        opacity: 0;
+        transform: translateY(-24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-left {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slide-right {
+    from {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes zoom-in {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes blur-in {
+    from {
+        opacity: 0;
+        filter: blur(14px);
+        transform: scale(1.02);
+    }
+
+    to {
+        opacity: 1;
+        filter: blur(0);
+        transform: scale(1);
+    }
+}
+
+/* Image reveal — a wipe that mimics an AI render completing. */
+@keyframes image-reveal {
+    from {
+        clip-path: inset(0 100% 0 0);
+        filter: blur(10px) saturate(0.6);
+    }
+
+    to {
+        clip-path: inset(0 0 0 0);
+        filter: blur(0) saturate(1);
+    }
+}
+
+@keyframes float-y {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-16px);
+    }
+}
+
+@keyframes float-x {
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(-12px, -10px);
+    }
+}
+
+@keyframes drift {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(4%, -5%) scale(1.06);
+    }
+
+    66% {
+        transform: translate(-4%, 4%) scale(0.96);
+    }
+
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes ping {
+    0% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+
+    70%,
+    100% {
+        transform: scale(2.4);
+        opacity: 0;
+    }
+}
+
+@keyframes pulse-soft {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.65;
+        transform: scale(0.94);
+    }
+}
+
+@keyframes pulse-glow {
+    0%,
+    100% {
+        box-shadow:
+            0 1px 0 0 rgb(255 255 255 / 0.16) inset,
+            0 14px 34px -14px rgb(91 95 248 / 0.9),
+            0 0 0 0 rgb(91 95 248 / 0.5);
+    }
+
+    50% {
+        box-shadow:
+            0 1px 0 0 rgb(255 255 255 / 0.16) inset,
+            0 14px 34px -14px rgb(91 95 248 / 0.9),
+            0 0 0 14px rgb(91 95 248 / 0);
+    }
+}
+
+@keyframes gradient-pan {
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+@keyframes shimmer {
+    from {
+        background-position: 160% 0;
+    }
+
+    to {
+        background-position: -60% 0;
+    }
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(3.2);
+        opacity: 0;
+    }
+}
+
+@keyframes scan {
+    0% {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    12%,
+    88% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-190%);
+        opacity: 0;
+    }
+}
+
+@keyframes progress-stripes {
+    from {
+        background-position:
+            0 0,
+            0 0;
+    }
+
+    to {
+        background-position:
+            1.25rem 0,
+            0 0;
+    }
+}
+
+@keyframes progress-slide {
+    0% {
+        transform: translateX(-120%);
+    }
+
+    100% {
+        transform: translateX(320%);
+    }
+}
+
+@keyframes dot-bounce {
+    0%,
+    60%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+
+    30% {
+        transform: translateY(-5px);
+        opacity: 1;
+    }
+}
+
+@keyframes marquee {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes toast-timer {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
+}
+
+@keyframes tilt {
+    0%,
+    100% {
+        transform: rotate(-1.2deg);
+    }
+
+    50% {
+        transform: rotate(1.2deg);
+    }
+}
+
+/* ==========================================================================
+   Scroll reveal
+   ========================================================================== */
+
+[data-reveal] {
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+[data-reveal].is-revealed {
+    animation-duration: 760ms;
+    animation-timing-function: var(--ease-out-soft);
+    animation-fill-mode: both;
+}
+
+[data-reveal='fade'].is-revealed {
+    animation-name: fade-in;
+}
+
+[data-reveal='up'].is-revealed {
+    animation-name: fade-up;
+}
+
+[data-reveal='down'].is-revealed {
+    animation-name: fade-down;
+}
+
+[data-reveal='left'].is-revealed {
+    animation-name: slide-left;
+}
+
+[data-reveal='right'].is-revealed {
+    animation-name: slide-right;
+}
+
+[data-reveal='zoom'].is-revealed {
+    animation-name: zoom-in;
+}
+
+[data-reveal='blur'].is-revealed {
+    animation-name: blur-in;
+}
+
+[data-reveal='image'].is-revealed {
+    animation-name: image-reveal;
+    animation-duration: 1.1s;
+}
+
+/* Stagger children with data-reveal-delay="1..12" (× 80ms). */
+[data-reveal-delay='1'] {
+    animation-delay: 80ms;
+}
+[data-reveal-delay='2'] {
+    animation-delay: 160ms;
+}
+[data-reveal-delay='3'] {
+    animation-delay: 240ms;
+}
+[data-reveal-delay='4'] {
+    animation-delay: 320ms;
+}
+[data-reveal-delay='5'] {
+    animation-delay: 400ms;
+}
+[data-reveal-delay='6'] {
+    animation-delay: 480ms;
+}
+[data-reveal-delay='7'] {
+    animation-delay: 560ms;
+}
+[data-reveal-delay='8'] {
+    animation-delay: 640ms;
+}
+[data-reveal-delay='9'] {
+    animation-delay: 720ms;
+}
+[data-reveal-delay='10'] {
+    animation-delay: 800ms;
+}
+[data-reveal-delay='11'] {
+    animation-delay: 880ms;
+}
+[data-reveal-delay='12'] {
+    animation-delay: 960ms;
+}
+
+/* No-JS fallback — never hide content when the observer never runs. */
+.no-js [data-reveal] {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   Named animation helpers
+   ========================================================================== */
+
+.anim-fade-in {
+    animation: fade-in var(--duration-slow) var(--ease-out-soft) both;
+}
+
+.anim-fade-up {
+    animation: fade-up var(--duration-slow) var(--ease-out-soft) both;
+}
+
+.anim-float {
+    animation: float-y 7s var(--ease-in-out-soft) infinite;
+}
+
+.anim-float-slow {
+    animation: float-y 11s var(--ease-in-out-soft) infinite;
+}
+
+.anim-drift {
+    animation: drift 22s var(--ease-in-out-soft) infinite;
+}
+
+.anim-tilt {
+    animation: tilt 9s var(--ease-in-out-soft) infinite;
+}
+
+.anim-spin-slow {
+    animation: spin 22s linear infinite;
+}
+
+.anim-pulse {
+    animation: pulse-soft 2.6s var(--ease-in-out-soft) infinite;
+}
+
+/* Animated gradient — pairs with .text-gradient or any gradient background. */
+.anim-gradient {
+    background-size: 220% 220%;
+    animation: gradient-pan 9s var(--ease-in-out-soft) infinite;
+}
+
+.anim-delay-1 {
+    animation-delay: 0.6s;
+}
+
+.anim-delay-2 {
+    animation-delay: 1.2s;
+}
+
+.anim-delay-3 {
+    animation-delay: 1.8s;
+}
+
+/* ==========================================================================
+   Hover micro-interactions
+   ========================================================================== */
+
+.hover-lift {
+    transition:
+        transform var(--duration-base) var(--ease-out-soft),
+        box-shadow var(--duration-base) var(--ease-out-soft);
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lift);
+}
+
+.hover-scale {
+    transition: transform var(--duration-base) var(--ease-out-soft);
+}
+
+.hover-scale:hover {
+    transform: scale(1.03);
+}
+
+.hover-glow {
+    transition: box-shadow var(--duration-base) var(--ease-out-soft);
+}
+
+.hover-glow:hover {
+    box-shadow: var(--shadow-glow);
+}
+
+/* Sweeping light across a surface on hover. */
+.hover-sheen {
+    position: relative;
+    overflow: hidden;
+}
+
+.hover-sheen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: var(--gradient-sheen);
+    background-size: 220% 100%;
+    background-position: 180% 0;
+    opacity: 0;
+    transition:
+        background-position 900ms var(--ease-out-soft),
+        opacity var(--duration-fast) linear;
+    pointer-events: none;
+}
+
+.hover-sheen:hover::after {
+    opacity: 1;
+    background-position: -60% 0;
+}
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    [data-reveal] {
+        opacity: 1 !important;
+    }
+}
+
+/* Descending glow dome — slow swell, kept small so the arc never visibly
+   jumps; it should read as breathing light, not a moving object. */
+@keyframes orb-breathe {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.82;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+}

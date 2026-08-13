@@ -3,8 +3,8 @@
 namespace App\Panels\Admin\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class UpdateStaffRequest extends FormRequest
 {
@@ -17,7 +17,7 @@ class UpdateStaffRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:admins,email,' . $this->route('staff')->id,
+            'email' => 'required|email|unique:admins,email,'.$this->route('staff')->id,
             'password' => ['nullable', 'confirmed', Password::min(8)],
             'phone' => 'nullable|string|max:20',
             'is_active' => 'nullable|boolean',

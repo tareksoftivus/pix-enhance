@@ -4,6 +4,7 @@ namespace App\Modules\Languages\Services;
 
 use App\Modules\Languages\Models\Language;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class LanguagesService
@@ -12,11 +13,11 @@ class LanguagesService
     {
         $query = Language::query();
 
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $query->where(function ($q) use ($filters) {
                 $q->where('name', 'like', "%{$filters['search']}%")
-                  ->orWhere('code', 'like', "%{$filters['search']}%")
-                  ->orWhere('native_name', 'like', "%{$filters['search']}%");
+                    ->orWhere('code', 'like', "%{$filters['search']}%")
+                    ->orWhere('native_name', 'like', "%{$filters['search']}%");
             });
         }
 
@@ -38,7 +39,7 @@ class LanguagesService
 
     public function create(array $data): Language
     {
-        if (!empty($data['is_default'])) {
+        if (! empty($data['is_default'])) {
             Language::where('is_default', true)->update(['is_default' => false]);
         }
 
@@ -46,22 +47,24 @@ class LanguagesService
 
         // Auto-create JSON translation file if it doesn't exist
         $jsonPath = lang_path("{$language->code}.json");
-        if (!file_exists($jsonPath)) {
-            file_put_contents($jsonPath, json_encode(new \stdClass(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        if (! file_exists($jsonPath)) {
+            file_put_contents($jsonPath, json_encode(new \stdClass, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         }
 
         $this->clearCache();
+
         return $language;
     }
 
     public function update(Language $language, array $data): Language
     {
-        if (!empty($data['is_default'])) {
+        if (! empty($data['is_default'])) {
             Language::where('is_default', true)->where('id', '!=', $language->id)->update(['is_default' => false]);
         }
 
         $language->update($data);
         $this->clearCache();
+
         return $language->fresh();
     }
 
@@ -73,6 +76,7 @@ class LanguagesService
 
         $result = $language->delete();
         $this->clearCache();
+
         return $result;
     }
 
@@ -82,8 +86,9 @@ class LanguagesService
             throw new \RuntimeException('Cannot deactivate the default language.');
         }
 
-        $language->update(['is_active' => !$language->is_active]);
+        $language->update(['is_active' => ! $language->is_active]);
         $this->clearCache();
+
         return $language->fresh();
     }
 
@@ -96,10 +101,11 @@ class LanguagesService
             'is_active' => true,
         ]);
         $this->clearCache();
+
         return $language->fresh();
     }
 
-    public function getActive(): \Illuminate\Database\Eloquent\Collection
+    public function getActive(): Collection
     {
         return Cache::rememberForever('languages.active', function () {
             return Language::active()->ordered()->get();
@@ -123,7 +129,7 @@ class LanguagesService
     {
         $path = lang_path('en.json');
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             return [];
         }
 
@@ -134,7 +140,7 @@ class LanguagesService
     {
         $path = lang_path("{$code}.json");
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             return [];
         }
 
@@ -146,10 +152,10 @@ class LanguagesService
         $path = lang_path("{$code}.json");
 
         // Remove empty values to keep the file clean
-        $translations = array_filter($translations, fn($value) => $value !== '' && $value !== null);
+        $translations = array_filter($translations, fn ($value) => $value !== '' && $value !== null);
 
         ksort($translations);
 
-        file_put_contents($path, json_encode($translations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n");
+        file_put_contents($path, json_encode($translations, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)."\n");
     }
 }

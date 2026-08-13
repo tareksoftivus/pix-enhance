@@ -1,0 +1,126 @@
+/**
+ * Dropdown / Popover menu
+ */
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown__menu {
+    position: absolute;
+    z-index: 70;
+    min-width: 13rem;
+    padding: 0.4375rem;
+    border-radius: 18px;
+    border: 1px solid var(--glass-border-strong);
+    background-color: rgb(15 15 18 / 0.95);
+    backdrop-filter: blur(26px) saturate(160%);
+    -webkit-backdrop-filter: blur(26px) saturate(160%);
+    box-shadow: var(--shadow-lift);
+}
+
+.dropdown__menu-end {
+    right: 0;
+    top: calc(100% + 0.5rem);
+}
+
+.dropdown__menu-start {
+    left: 0;
+    top: calc(100% + 0.5rem);
+}
+
+.dropdown__menu-up {
+    left: 0;
+    bottom: calc(100% + 0.5rem);
+}
+
+.dropdown__header {
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 0.375rem;
+}
+
+.dropdown__label {
+    padding: 0.5rem 0.75rem 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-faint);
+}
+
+.dropdown__item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 0.5625rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-body);
+    text-align: left;
+    transition: all var(--duration-fast) var(--ease-out-soft);
+}
+
+.dropdown__item svg {
+    width: 1rem;
+    height: 1rem;
+    flex: none;
+    color: var(--color-faint);
+    transition: color var(--duration-fast) var(--ease-out-soft);
+}
+
+.dropdown__item:hover {
+    background-color: rgb(91 95 248 / 0.14);
+    color: var(--color-title);
+}
+
+.dropdown__item:hover svg {
+    color: var(--color-primary-soft);
+}
+
+.dropdown__item.is-active {
+    background-color: rgb(91 95 248 / 0.14);
+    color: var(--color-title);
+}
+
+.dropdown__item-danger:hover {
+    background-color: rgb(239 68 68 / 0.14);
+    color: #fca5a5;
+}
+
+.dropdown__item-danger:hover svg {
+    color: #fca5a5;
+}
+
+.dropdown__divider {
+    height: 1px;
+    margin: 0.375rem 0.25rem;
+    background-color: var(--hairline);
+}
+
+.dropdown__meta {
+    margin-left: auto;
+    font-size: 0.6875rem;
+    color: var(--color-faint);
+}
+
+/* --- Tooltip ------------------------------------------------------------ */
+.tooltip {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    left: 50%;
+    translate: -50% 0;
+    z-index: 80;
+    padding: 0.4375rem 0.75rem;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border-strong);
+    background-color: rgb(15 15 18 / 0.96);
+    color: var(--color-title);
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: var(--shadow-soft);
+    pointer-events: none;
+}

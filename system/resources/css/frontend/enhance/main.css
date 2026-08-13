@@ -1,0 +1,71 @@
+/**
+ * PixEnhance — Master Stylesheet
+ * ---------------------------------------------------------------------------
+ * Every rule in this template lives in an external stylesheet. There are no
+ * inline `style=""` attributes and no embedded <style> blocks anywhere in the
+ * HTML — the only exception being CSS custom properties that are *data*, not
+ * styling (e.g. a progress value), which are set through data-* attributes.
+ *
+ * Import order is deliberate — cascade layers keep specificity predictable:
+ *   1. Tailwind          engine + preflight + utilities
+ *   2. Base              design tokens, resets, typography
+ *   3. Components        reusable UI blocks (buttons, cards, navbar, ...)
+ *   4. Sections          page-specific composition (hero, pricing, ...)
+ *   5. Utilities         animation + decoration helpers (highest priority)
+ * ---------------------------------------------------------------------------
+ */
+
+@import 'tailwindcss';
+
+/* Explicit content sources — keeps class detection deterministic regardless
+   of where the build is invoked from. Add new folders here if you extend the
+   template with additional page directories. */
+@source '../../../views/frontend/themes/enhance/**/*.blade.php';
+@source '../../../js/frontend/enhance/**/*.js';
+
+/* 1. Base ---------------------------------------------------------------- */
+@import './base/tokens.css';
+@import './base/reset.css';
+@import './base/typography.css';
+
+/* 2. Components ---------------------------------------------------------- */
+@import './components/buttons.css';
+@import './components/badges.css';
+@import './components/cards.css';
+@import './components/navbar.css';
+@import './components/forms.css';
+@import './components/accordion.css';
+@import './components/tabs.css';
+@import './components/dropdown.css';
+@import './components/modal.css';
+@import './components/toast.css';
+@import './components/alerts.css';
+@import './components/progress.css';
+@import './components/loaders.css';
+@import './components/pagination.css';
+@import './components/breadcrumb.css';
+@import './components/compare.css';
+@import './components/upload.css';
+@import './components/stats.css';
+@import './components/pricing.css';
+@import './components/testimonials.css';
+@import './components/logos.css';
+@import './components/footer.css';
+
+/* 3. Sections ------------------------------------------------------------ */
+@import './sections/hero.css';
+@import './sections/features.css';
+@import './sections/steps.css';
+@import './sections/cta.css';
+@import './sections/auth.css';
+@import './sections/blog.css';
+@import './sections/pricing-page.css';
+@import './sections/features-page.css';
+@import './sections/legal-page.css';
+@import './sections/dashboard.css';
+@import './sections/account.css';
+
+/* 4. Utilities ----------------------------------------------------------- */
+@import './utilities/decorations.css';
+@import './utilities/animations.css';
+@import './utilities/helpers.css';

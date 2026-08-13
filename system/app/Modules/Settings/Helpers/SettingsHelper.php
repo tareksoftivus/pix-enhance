@@ -1,14 +1,11 @@
 <?php
 
 use App\Modules\Settings\Services\SettingsService;
+use Carbon\Carbon;
 
-if (!function_exists('setting')) {
+if (! function_exists('setting')) {
     /**
      * Get a setting value
-     *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
      */
     function setting(string $key, mixed $default = null): mixed
     {
@@ -16,22 +13,20 @@ if (!function_exists('setting')) {
     }
 }
 
-if (!function_exists('format_date')) {
+if (! function_exists('format_date')) {
     /**
      * Format a date using the system date_format setting.
      *
-     * @param  \DateTimeInterface|string|null  $date
      * @param  bool  $withTime  Append time (h:i A) after the date format
-     * @return string
      */
-    function format_date(\DateTimeInterface|string|null $date, bool $withTime = false): string
+    function format_date(DateTimeInterface|string|null $date, bool $withTime = false): string
     {
-        if (!$date) {
+        if (! $date) {
             return '';
         }
 
         if (is_string($date)) {
-            $date = \Carbon\Carbon::parse($date);
+            $date = Carbon::parse($date);
         }
 
         $format = setting('date_format', 'd M, Y');

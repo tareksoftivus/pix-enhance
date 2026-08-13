@@ -48,19 +48,162 @@ class FrontendPageSeeder extends Seeder
             ]
         );
 
-        $homeSectionIds = FrontendSection::whereIn('slug', [
-            'homepage-hero',
-            'homepage-features',
-            'homepage-testimonials',
-            'global-footer',
-        ])->pluck('id')->all();
+        $pricing = Page::updateOrCreate(
+            ['slug' => 'pricing'],
+            [
+                'title' => 'Pricing',
+                'status' => 'published',
+                'excerpt' => 'Simple credit pricing for AI image enhancement.',
+                'default_layout' => 'default',
+                'theme_overrides' => [],
+                'is_system' => false,
+                'is_home' => false,
+                'meta_title' => 'Pricing',
+                'meta_description' => 'Simple credit pricing for AI image upscaling, restoration and enhancement.',
+                'meta_image_media_id' => null,
+                'published_at' => now(),
+            ]
+        );
 
-        $aboutSectionIds = FrontendSection::whereIn('slug', [
+        $features = Page::updateOrCreate(
+            ['slug' => 'features'],
+            [
+                'title' => 'Features',
+                'status' => 'published',
+                'excerpt' => 'AI enhancement features for every image workflow.',
+                'default_layout' => 'default',
+                'theme_overrides' => [],
+                'is_system' => false,
+                'is_home' => false,
+                'meta_title' => 'Features',
+                'meta_description' => 'Explore the AI image enhancement, upscaling, restoration and batch workflow features in Enhance.',
+                'meta_image_media_id' => null,
+                'published_at' => now(),
+            ]
+        );
+
+        $terms = Page::updateOrCreate(
+            ['slug' => 'terms-conditions'],
+            [
+                'title' => 'Terms & Conditions',
+                'status' => 'published',
+                'excerpt' => 'Terms for using PixEnhance.',
+                'default_layout' => 'default',
+                'theme_overrides' => [],
+                'is_system' => false,
+                'is_home' => false,
+                'meta_title' => 'Terms & Conditions',
+                'meta_description' => 'Read the PixEnhance terms and conditions for account, billing and platform use.',
+                'meta_image_media_id' => null,
+                'published_at' => now(),
+            ]
+        );
+
+        $privacy = Page::updateOrCreate(
+            ['slug' => 'privacy-policy'],
+            [
+                'title' => 'Privacy Policy',
+                'status' => 'published',
+                'excerpt' => 'Privacy practices for PixEnhance.',
+                'default_layout' => 'default',
+                'theme_overrides' => [],
+                'is_system' => false,
+                'is_home' => false,
+                'meta_title' => 'Privacy Policy',
+                'meta_description' => 'Learn how PixEnhance collects, uses and protects account, usage and image-processing data.',
+                'meta_image_media_id' => null,
+                'published_at' => now(),
+            ]
+        );
+
+        $cookie = Page::updateOrCreate(
+            ['slug' => 'cookie-policy'],
+            [
+                'title' => 'Cookie Policy',
+                'status' => 'published',
+                'excerpt' => 'Cookie practices for PixEnhance.',
+                'default_layout' => 'default',
+                'theme_overrides' => [],
+                'is_system' => false,
+                'is_home' => false,
+                'meta_title' => 'Cookie Policy',
+                'meta_description' => 'Learn how PixEnhance uses cookies and similar technologies for security, preferences and analytics.',
+                'meta_image_media_id' => null,
+                'published_at' => now(),
+            ]
+        );
+
+        $homeSectionSlugs = [
+            'homepage-hero',
+            'homepage-logos',
+            'homepage-features',
+            'homepage-how-it-works',
+            'homepage-quality',
+            'homepage-ai-features',
+            'homepage-pricing',
+            'homepage-testimonials',
+            'homepage-faq',
+            'homepage-cta',
+        ];
+
+        $homeSections = FrontendSection::whereIn('slug', $homeSectionSlugs)->pluck('id', 'slug');
+        $homeSectionIds = collect($homeSectionSlugs)->map(fn (string $slug) => $homeSections[$slug] ?? null)->all();
+
+        $aboutSectionSlugs = [
             'about-rich-content',
-            'global-footer',
-        ])->pluck('id')->all();
+        ];
+
+        $aboutSections = FrontendSection::whereIn('slug', $aboutSectionSlugs)->pluck('id', 'slug');
+        $aboutSectionIds = collect($aboutSectionSlugs)->map(fn (string $slug) => $aboutSections[$slug] ?? null)->all();
+
+        $pricingSectionSlugs = [
+            'pricing-hero',
+            'pricing-plans',
+            'pricing-compare',
+        ];
+
+        $pricingSections = FrontendSection::whereIn('slug', $pricingSectionSlugs)->pluck('id', 'slug');
+        $pricingSectionIds = collect($pricingSectionSlugs)->map(fn (string $slug) => $pricingSections[$slug] ?? null)->all();
+
+        $featuresSectionSlugs = [
+            'features-hero',
+            'features-overview',
+            'features-ai',
+        ];
+
+        $featuresSections = FrontendSection::whereIn('slug', $featuresSectionSlugs)->pluck('id', 'slug');
+        $featuresSectionIds = collect($featuresSectionSlugs)->map(fn (string $slug) => $featuresSections[$slug] ?? null)->all();
+
+        $termsSectionSlugs = [
+            'terms-hero',
+            'terms-content',
+        ];
+
+        $termsSections = FrontendSection::whereIn('slug', $termsSectionSlugs)->pluck('id', 'slug');
+        $termsSectionIds = collect($termsSectionSlugs)->map(fn (string $slug) => $termsSections[$slug] ?? null)->all();
+
+        $privacySectionSlugs = [
+            'privacy-hero',
+            'privacy-content',
+        ];
+
+        $privacySections = FrontendSection::whereIn('slug', $privacySectionSlugs)->pluck('id', 'slug');
+        $privacySectionIds = collect($privacySectionSlugs)->map(fn (string $slug) => $privacySections[$slug] ?? null)->all();
+
+        $cookieSectionSlugs = [
+            'cookie-hero',
+            'cookie-content',
+        ];
+
+        $cookieSections = FrontendSection::whereIn('slug', $cookieSectionSlugs)->pluck('id', 'slug');
+        $cookieSectionIds = collect($cookieSectionSlugs)->map(fn (string $slug) => $cookieSections[$slug] ?? null)->all();
 
         $composer->syncSections($home, $homeSectionIds);
         $composer->syncSections($about, $aboutSectionIds);
+        $composer->syncSections($pricing, $pricingSectionIds);
+        $composer->syncSections($features, $featuresSectionIds);
+        $composer->syncSections($terms, $termsSectionIds);
+        $composer->syncSections($privacy, $privacySectionIds);
+        $composer->syncSections($cookie, $cookieSectionIds);
     }
 }

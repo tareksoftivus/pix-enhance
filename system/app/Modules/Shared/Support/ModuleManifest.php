@@ -35,7 +35,7 @@ final class ModuleManifest
             throw new InvalidArgumentException("Invalid module manifest JSON: {$manifestPath}");
         }
 
-        return static::fromArray($decoded, $modulePath, $manifestPath);
+        return self::fromArray($decoded, $modulePath, $manifestPath);
     }
 
     public static function fromArray(array $data, string $modulePath, ?string $manifestPath = null): self

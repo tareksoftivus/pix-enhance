@@ -8,4 +8,3 @@ if (! function_exists('frontend_active_theme')) {
         return app(ActiveThemeResolver::class)->resolve();
     }
 }
-

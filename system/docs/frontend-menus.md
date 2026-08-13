@@ -51,9 +51,9 @@ Theme assignment is stored in the existing `frontend_theme_settings` table.
 
 Keys follow this structure:
 
-- `theme.classic.menu.header`
-- `theme.classic.menu.footer`
-- `theme.classic.menu.mobile`
+- `theme.enhance.menu.header`
+- `theme.enhance.menu.footer`
+- `theme.enhance.menu.mobile`
 
 Equivalent keys exist for every installed theme.
 

@@ -12,10 +12,10 @@ class TableConfig
 
         // 1. Handle Search (Basic Example)
         if ($search) {
-            $query->where(function($q) use ($columns, $search) {
+            $query->where(function ($q) use ($columns, $search) {
                 foreach ($columns as $col) {
                     if ($col['searchable'] ?? false) {
-                        $q->orWhere($col['field'], 'like', $search . '%'); // Prefix search is faster
+                        $q->orWhere($col['field'], 'like', $search.'%'); // Prefix search is faster
                     }
                 }
             });

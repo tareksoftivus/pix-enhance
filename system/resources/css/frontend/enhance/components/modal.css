@@ -1,0 +1,139 @@
+/**
+ * Modal / Dialog
+ */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+.modal__scrim {
+    position: absolute;
+    inset: 0;
+    background-color: rgb(9 9 11 / 0.78);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.modal__dialog {
+    position: relative;
+    width: 100%;
+    max-width: 32rem;
+    margin-block: auto;
+    border-radius: var(--radius-panel);
+    border: 1px solid var(--glass-border-strong);
+    background-color: rgb(20 20 23 / 0.98);
+    box-shadow: var(--shadow-lift);
+    overflow: hidden;
+}
+
+.modal__dialog-sm {
+    max-width: 24rem;
+}
+
+.modal__dialog-lg {
+    max-width: 46rem;
+}
+
+.modal__dialog-xl {
+    max-width: 64rem;
+}
+
+/* Brand glow along the top edge. */
+.modal__dialog::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(91 95 248 / 0.85), transparent);
+}
+
+.modal__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding: 1.75rem 1.75rem 0;
+}
+
+.modal__title {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--color-title);
+    letter-spacing: -0.025em;
+}
+
+.modal__subtitle {
+    margin-top: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+}
+
+.modal__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: none;
+    border-radius: 12px;
+    border: 1px solid var(--hairline);
+    background-color: var(--color-card);
+    color: var(--color-muted);
+    transition: all var(--duration-fast) var(--ease-out-soft);
+}
+
+.modal__close:hover {
+    color: var(--color-title);
+    border-color: var(--color-faint);
+    transform: rotate(90deg);
+}
+
+.modal__close svg {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+.modal__body {
+    padding: 1.5rem 1.75rem;
+}
+
+.modal__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1.25rem 1.75rem;
+    border-top: 1px solid var(--hairline);
+    background-color: rgb(9 9 11 / 0.4);
+}
+
+.modal__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 20px;
+    border: 1px solid rgb(91 95 248 / 0.28);
+    background-image: linear-gradient(150deg, rgb(91 95 248 / 0.24), rgb(124 58 237 / 0.08));
+    color: var(--color-primary-soft);
+}
+
+.modal__icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.modal__icon-danger {
+    border-color: rgb(239 68 68 / 0.3);
+    background-image: linear-gradient(150deg, rgb(239 68 68 / 0.24), rgb(239 68 68 / 0.06));
+    color: #fca5a5;
+}

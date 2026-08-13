@@ -21,14 +21,16 @@ class RemovePanelCommand extends Command
         $panelPath = app_path("Panels/{$studlyName}");
         $viewsPath = resource_path("views/panels/{$lowerName}");
 
-        if (!File::exists($panelPath)) {
+        if (! File::exists($panelPath)) {
             $this->error("Panel {$studlyName} does not exist!");
+
             return self::FAILURE;
         }
 
-        if (!$this->option('confirm')) {
-            if (!$this->confirm("Are you sure you want to remove the {$studlyName} panel? This action cannot be undone.")) {
+        if (! $this->option('confirm')) {
+            if (! $this->confirm("Are you sure you want to remove the {$studlyName} panel? This action cannot be undone.")) {
                 $this->info('Operation cancelled.');
+
                 return self::SUCCESS;
             }
         }
