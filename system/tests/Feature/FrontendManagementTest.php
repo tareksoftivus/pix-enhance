@@ -27,7 +27,7 @@ test('published home page renders with seeded frontend content', function () {
     $response = $this->get('/');
 
     $response->assertOk();
-    $response->assertSee('Launch pages that feel intentional.');
+    $response->assertSee('Upscale any image to');
 });
 
 test('docs page renders from managed frontend content', function () {

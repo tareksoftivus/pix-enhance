@@ -13,6 +13,8 @@ function emitPickerChange(picker, url) {
   const input = picker.querySelector('[data-media-picker-input]');
   if (!input) return;
 
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+
   const match = (input.name || '').match(/\[([^\]]+)\]$/);
   const key = match ? match[1] : input.name;
 

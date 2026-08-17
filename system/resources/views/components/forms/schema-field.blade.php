@@ -115,6 +115,8 @@
     <x-forms.editor :label="$displayLabel" :name="$name" :value="$resolvedValue" :placeholder="$hint ?: __('Type your content here...')" />
 @elseif($type === 'repeater')
     <x-forms.repeater :label="$displayLabel" :name="$name" :items="$resolvedValue ?? []" :schema="$field['schema'] ?? []" :hint="$displayHint" :error-key="$errorName" />
+@elseif($type === 'url')
+    <x-forms.input :label="$displayLabel" :name="$name" type="text" :value="$resolvedValue" :required="$required" :hint="$displayHint" inputmode="url" autocomplete="url" />
 @else
     <x-forms.input :label="$displayLabel" :name="$name" :type="$type" :value="$resolvedValue" :required="$required" :hint="$displayHint" />
 @endif

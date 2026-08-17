@@ -120,7 +120,8 @@
                 const fieldType = fieldDef.type || 'text';
                 const fieldName = escapeHtml(fieldKey);
                 const hintMarkup = renderHint(fieldDef);
-                const inputType = ['email', 'url', 'password', 'tel', 'search', 'number', 'color'].includes(fieldType) ? fieldType : 'text';
+                const inputType = ['email', 'password', 'tel', 'search', 'number', 'color'].includes(fieldType) ? fieldType : 'text';
+                const urlAttributes = fieldType === 'url' ? ' inputmode="url" autocomplete="url"' : '';
 
                 if (fieldType === 'editor') {
                   const editorId = `repeater-editor-${rowKey}-${fieldName}-${index}`;
@@ -199,13 +200,76 @@
                   `;
                 }
 
+                if (fieldType === 'media') {
+                  const accept = escapeHtml(fieldDef.accept || 'image');
+                  const selectedMarkup = value ? `<span class="media-picker-cta">${escapeHtml('{{ __('Selected media ID') }}')}: ${escapeHtml(value)}</span>` : `<span class="media-picker-cta">{{ __('Click or drop files') }}</span>`;
+
+                  return `
+                    <div class="space-y-2">
+                      <label class="form-label">${label}</label>
+                      <div class="media-picker" data-media-picker data-media-accept="${accept}">
+                        <input type="hidden" value="${escapeHtml(value)}" data-repeater-prop="${fieldName}" data-media-picker-input>
+                        <div class="media-picker-dropzone" data-media-picker-trigger data-media-picker-dropzone>
+                          <div class="media-picker-preview" data-media-picker-preview></div>
+                          <div class="media-picker-placeholder" data-media-picker-placeholder ${value ? 'hidden' : ''}>
+                            <i class="ph ph-image"></i>
+                          </div>
+                          <div class="media-picker-dropzone-text">
+                            ${selectedMarkup}
+                            ${hintMarkup}
+                          </div>
+                          <button type="button" class="media-picker-remove" data-media-picker-remove title="{{ __('Remove') }}" ${value ? '' : 'hidden'}>
+                            <i class="ph ph-x"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }
+
+                if (fieldType === 'icon') {
+                  return `
+                    <div class="space-y-2">
+                      <label class="form-label">${label}</label>
+                      <input type="text" value="${escapeHtml(value)}" class="input-field" data-repeater-prop="${fieldName}" placeholder="ph ph-sparkle">
+                      ${hintMarkup}
+                    </div>
+                  `;
+                }
+
                 return `
                   <div class="space-y-2">
                     <label class="form-label">${label}</label>
-                    <input type="${inputType}" value="${escapeHtml(value)}" class="input-field" data-repeater-prop="${fieldName}">
+                    <input type="${inputType}" value="${escapeHtml(value)}" class="input-field" data-repeater-prop="${fieldName}"${urlAttributes}>
                     ${hintMarkup}
                   </div>
                 `;
+              }
+
+              function renderFieldRows(schema, rowData, index, rowKey) {
+                const rows = new Map();
+
+                Object.entries(schema).forEach(function ([fieldKey, fieldDef]) {
+                  const rowKeyName = fieldDef.inline_group || `__field_${fieldKey}`;
+
+                  if (!rows.has(rowKeyName)) {
+                    rows.set(rowKeyName, []);
+                  }
+
+                  rows.get(rowKeyName).push([fieldKey, fieldDef]);
+                });
+
+                return Array.from(rows.values()).map(function (fieldRow) {
+                  const renderedFields = fieldRow
+                    .map(([fieldKey, fieldDef]) => renderField(fieldKey, fieldDef, rowData, index, rowKey))
+                    .join('');
+
+                  if (fieldRow.length < 2) {
+                    return renderedFields;
+                  }
+
+                  return `<div class="grid grid-cols-1 gap-4 md:grid-cols-2">${renderedFields}</div>`;
+                }).join('');
               }
 
               function sync(container) {
@@ -347,7 +411,7 @@
                     </button>
                   </div>
                   <div class="space-y-4">
-                    ${Object.entries(schema).map(([fieldKey, fieldDef]) => renderField(fieldKey, fieldDef, rowData, index, rowKey)).join('')}
+                    ${renderFieldRows(schema, rowData, index, rowKey)}
                   </div>
                 `;
 

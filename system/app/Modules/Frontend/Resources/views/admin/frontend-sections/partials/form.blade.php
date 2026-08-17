@@ -1,5 +1,8 @@
 @php
-    $sectionData = old('data', $section?->data ?? []);
+    $sectionData = old('data', $section ? frontend_section_data($section) : []);
+    $schemaGroups = collect($definition['fields'] ?? [])
+        ->mapToGroups(fn (array $field, string $fieldKey): array => [$field['group'] ?? '_default' => [$fieldKey, $field]])
+        ->all();
 @endphp
 
 <form method="POST" action="{{ $action }}">
@@ -48,14 +51,53 @@
                     <p class="mt-1 text-sm text-neutral-500">{{ $definition['description'] ?? __('Fill the values required by this section type.') }}</p>
                 </div>
 
-                <div class="space-y-5">
-                    @foreach(($definition['fields'] ?? []) as $fieldKey => $field)
-                        <x-forms.schema-field
-                            :field="$field"
-                            :name="'data[' . $fieldKey . ']'"
-                            :error-key="'data.' . $fieldKey"
-                            :value="$sectionData[$fieldKey] ?? ($field['default'] ?? null)"
-                        />
+                <div class="space-y-6">
+                    @foreach($schemaGroups as $groupKey => $groupFields)
+                        @php
+                            $firstField = $groupFields[0][1] ?? [];
+                            $groupLabel = $firstField['group_label'] ?? null;
+                            $groupHint = $firstField['group_hint'] ?? null;
+                            $fieldRows = collect($groupFields)
+                                ->groupBy(fn (array $entry): string => $entry[1]['inline_group'] ?? '__field_' . $entry[0])
+                                ->values();
+                        @endphp
+
+                        <div class="{{ $groupKey === '_default' ? 'space-y-5' : 'rounded-2xl border border-neutral-100 bg-neutral-0 p-5 space-y-5' }}">
+                            @if($groupLabel || $groupHint)
+                                <div>
+                                    @if($groupLabel)
+                                        <h5 class="text-sm font-bold text-neutral-900">{{ __($groupLabel) }}</h5>
+                                    @endif
+                                    @if($groupHint)
+                                        <p class="mt-1 text-sm text-neutral-500">{{ __($groupHint) }}</p>
+                                    @endif
+                                </div>
+                            @endif
+
+                            @foreach($fieldRows as $fieldRow)
+                                @if($fieldRow->count() > 1)
+                                    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                                        @foreach($fieldRow as [$fieldKey, $field])
+                                            <x-forms.schema-field
+                                                :field="$field"
+                                                :name="'data[' . $fieldKey . ']'"
+                                                :error-key="'data.' . $fieldKey"
+                                                :value="$sectionData[$fieldKey] ?? ($field['default'] ?? null)"
+                                            />
+                                        @endforeach
+                                    </div>
+                                @else
+                                    @foreach($fieldRow as [$fieldKey, $field])
+                                        <x-forms.schema-field
+                                            :field="$field"
+                                            :name="'data[' . $fieldKey . ']'"
+                                            :error-key="'data.' . $fieldKey"
+                                            :value="$sectionData[$fieldKey] ?? ($field['default'] ?? null)"
+                                        />
+                                    @endforeach
+                                @endif
+                            @endforeach
+                        </div>
                     @endforeach
                 </div>
             </div>

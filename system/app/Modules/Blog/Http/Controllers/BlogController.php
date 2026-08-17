@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Modules\Blog\Models\BlogCategory;
 use App\Modules\Blog\Models\BlogPost;
 use App\Modules\Blog\Services\BlogPostService;
+use App\Modules\Frontend\Models\FrontendSection;
 use App\Modules\Frontend\Services\MenuRenderService;
 use App\Modules\Frontend\Services\ThemeRegistry;
 use App\Modules\Frontend\Services\ThemeRenderService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class BlogController extends Controller
@@ -172,12 +174,27 @@ class BlogController extends Controller
      */
     protected function resolvedEnhanceSections(array $sections): array
     {
+        $managedSections = Schema::hasTable('frontend_sections')
+            ? FrontendSection::query()
+                ->whereIn('type', $sections)
+                ->where('status', 'published')
+                ->get()
+                ->keyBy('type')
+            : collect();
+
         return Collection::make($sections)
-            ->map(fn (string $section) => [
-                'view' => "frontend.themes.enhance.sections.{$section}",
-                'supported' => true,
-                'section' => (object) ['type' => $section, 'data' => []],
-            ])
+            ->map(function (string $section) use ($managedSections): array {
+                $managedSection = $managedSections->get($section);
+
+                return [
+                    'view' => "frontend.themes.enhance.sections.{$section}",
+                    'supported' => true,
+                    'section' => $managedSection ?: (object) [
+                        'type' => $section,
+                        'data' => frontend_section_defaults($section),
+                    ],
+                ];
+            })
             ->all();
     }
 }

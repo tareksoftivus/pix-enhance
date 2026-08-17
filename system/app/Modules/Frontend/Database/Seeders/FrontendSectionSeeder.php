@@ -4,6 +4,7 @@ namespace App\Modules\Frontend\Database\Seeders;
 
 use App\Modules\Frontend\Models\FrontendSection;
 use App\Modules\Frontend\Services\FrontendSectionService;
+use App\Modules\Frontend\Services\SectionRegistry;
 use Illuminate\Database\Seeder;
 
 class FrontendSectionSeeder extends Seeder
@@ -12,6 +13,7 @@ class FrontendSectionSeeder extends Seeder
     {
         /** @var FrontendSectionService $service */
         $service = app(FrontendSectionService::class);
+        $sectionDefaults = fn (string $type): array => app(SectionRegistry::class)->defaults($type);
 
         $sections = [
             [
@@ -20,15 +22,15 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'hero',
                 'status' => 'published',
                 'description' => 'Primary hero section for the homepage.',
-                'data' => [],
+                'data' => $sectionDefaults('hero'),
             ],
             [
-                'name' => 'Homepage Features',
+                'name' => 'Homepage Logos',
                 'slug' => 'homepage-logos',
                 'type' => 'logos',
                 'status' => 'published',
                 'description' => 'Trusted brand logo strip for the homepage.',
-                'data' => [],
+                'data' => $sectionDefaults('logos'),
             ],
             [
                 'name' => 'Homepage Features',
@@ -36,7 +38,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'features',
                 'status' => 'published',
                 'description' => 'Feature highlights for the homepage.',
-                'data' => [],
+                'data' => $sectionDefaults('features'),
             ],
             [
                 'name' => 'Homepage How It Works',
@@ -44,7 +46,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'how_it_works',
                 'status' => 'published',
                 'description' => 'Process steps for the homepage.',
-                'data' => [],
+                'data' => $sectionDefaults('how_it_works'),
             ],
             [
                 'name' => 'Homepage Quality',
@@ -52,7 +54,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'quality',
                 'status' => 'published',
                 'description' => 'Quality comparison section for the homepage.',
-                'data' => [],
+                'data' => $sectionDefaults('quality'),
             ],
             [
                 'name' => 'Homepage AI Features',
@@ -60,7 +62,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'ai_features',
                 'status' => 'published',
                 'description' => 'AI feature tabs for the homepage.',
-                'data' => [],
+                'data' => $sectionDefaults('ai_features'),
             ],
             [
                 'name' => 'Homepage Pricing',
@@ -68,7 +70,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'pricing',
                 'status' => 'published',
                 'description' => 'Pricing cards for the homepage.',
-                'data' => [],
+                'data' => $sectionDefaults('pricing'),
             ],
             [
                 'name' => 'Homepage Testimonials',
@@ -76,7 +78,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'testimonials',
                 'status' => 'published',
                 'description' => 'Social proof section for the homepage.',
-                'data' => [],
+                'data' => $sectionDefaults('testimonials'),
             ],
             [
                 'name' => 'Homepage FAQ',
@@ -84,7 +86,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'faq',
                 'status' => 'published',
                 'description' => 'Frequently asked questions for the homepage.',
-                'data' => [],
+                'data' => $sectionDefaults('faq'),
             ],
             [
                 'name' => 'Homepage CTA',
@@ -92,7 +94,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'cta',
                 'status' => 'published',
                 'description' => 'Final call to action for the homepage.',
-                'data' => [],
+                'data' => $sectionDefaults('cta'),
             ],
             [
                 'name' => 'Pricing Hero',
@@ -100,7 +102,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'pricing_hero',
                 'status' => 'published',
                 'description' => 'Pricing page hero section.',
-                'data' => [],
+                'data' => $sectionDefaults('pricing_hero'),
             ],
             [
                 'name' => 'Pricing Plans',
@@ -108,7 +110,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'pricing_plans',
                 'status' => 'published',
                 'description' => 'Pricing cards for the pricing page.',
-                'data' => [],
+                'data' => $sectionDefaults('pricing_plans'),
             ],
             [
                 'name' => 'Pricing Compare',
@@ -116,7 +118,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'pricing_compare',
                 'status' => 'published',
                 'description' => 'Feature comparison table for the pricing page.',
-                'data' => [],
+                'data' => $sectionDefaults('pricing_compare'),
             ],
             [
                 'name' => 'Features Hero',
@@ -124,7 +126,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'features_hero',
                 'status' => 'published',
                 'description' => 'Features page hero section.',
-                'data' => [],
+                'data' => $sectionDefaults('features_hero'),
             ],
             [
                 'name' => 'Features Overview',
@@ -132,7 +134,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'features_overview',
                 'status' => 'published',
                 'description' => 'Capability grid for the features page.',
-                'data' => [],
+                'data' => $sectionDefaults('features_overview'),
             ],
             [
                 'name' => 'Features AI Routing',
@@ -140,7 +142,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'features_ai',
                 'status' => 'published',
                 'description' => 'AI routing details for the features page.',
-                'data' => [],
+                'data' => $sectionDefaults('features_ai'),
             ],
             [
                 'name' => 'Docs Hero',
@@ -148,7 +150,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'docs_hero',
                 'status' => 'published',
                 'description' => 'Documentation page hero section.',
-                'data' => [],
+                'data' => $sectionDefaults('docs_hero'),
             ],
             [
                 'name' => 'Docs Content',
@@ -156,7 +158,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'docs_content',
                 'status' => 'published',
                 'description' => 'Documentation page content section.',
-                'data' => [],
+                'data' => $sectionDefaults('docs_content'),
             ],
             [
                 'name' => 'Terms Hero',
@@ -164,7 +166,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'terms_hero',
                 'status' => 'published',
                 'description' => 'Terms and conditions hero section.',
-                'data' => [],
+                'data' => $sectionDefaults('terms_hero'),
             ],
             [
                 'name' => 'Terms Content',
@@ -172,7 +174,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'terms_content',
                 'status' => 'published',
                 'description' => 'Terms and conditions content section.',
-                'data' => [],
+                'data' => $sectionDefaults('terms_content'),
             ],
             [
                 'name' => 'Privacy Hero',
@@ -180,7 +182,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'privacy_hero',
                 'status' => 'published',
                 'description' => 'Privacy policy hero section.',
-                'data' => [],
+                'data' => $sectionDefaults('privacy_hero'),
             ],
             [
                 'name' => 'Privacy Content',
@@ -188,7 +190,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'privacy_content',
                 'status' => 'published',
                 'description' => 'Privacy policy content section.',
-                'data' => [],
+                'data' => $sectionDefaults('privacy_content'),
             ],
             [
                 'name' => 'Cookie Hero',
@@ -196,7 +198,7 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'cookie_hero',
                 'status' => 'published',
                 'description' => 'Cookie policy hero section.',
-                'data' => [],
+                'data' => $sectionDefaults('cookie_hero'),
             ],
             [
                 'name' => 'Cookie Content',
@@ -204,7 +206,15 @@ class FrontendSectionSeeder extends Seeder
                 'type' => 'cookie_content',
                 'status' => 'published',
                 'description' => 'Cookie policy content section.',
-                'data' => [],
+                'data' => $sectionDefaults('cookie_content'),
+            ],
+            [
+                'name' => 'Blog Hero',
+                'slug' => 'blog-hero',
+                'type' => 'blog_hero',
+                'status' => 'published',
+                'description' => 'Blog index hero section.',
+                'data' => $sectionDefaults('blog_hero'),
             ],
             [
                 'name' => 'About Content',

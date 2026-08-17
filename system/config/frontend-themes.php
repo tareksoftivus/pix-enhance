@@ -31,6 +31,7 @@ return [
             'privacy_content',
             'cookie_hero',
             'cookie_content',
+            'blog_hero',
             'faq',
             'cta',
             'rich_content',
