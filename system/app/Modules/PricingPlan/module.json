@@ -1,0 +1,16 @@
+{
+    "name": "PricingPlan",
+    "alias": "pricing-plans",
+    "description": "PricingPlan module",
+    "version": "1.0.0",
+    "priority": 100,
+    "providers": [
+        "App\\Modules\\PricingPlan\\Providers\\PricingPlanServiceProvider"
+    ],
+    "requires": [],
+    "packages": {
+        "require": {},
+        "require-dev": {}
+    },
+    "active": true
+}

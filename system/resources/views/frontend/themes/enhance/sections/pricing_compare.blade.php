@@ -1,3 +1,51 @@
+@php
+    $plans = ($pricingPlans ?? collect())->values();
+
+    if ($plans->isEmpty()) {
+        $plans = collect([
+            (object) [
+                'name' => 'Starter',
+                'credits_monthly' => 300,
+                'features' => [
+                    '300 image enhancement credits per month',
+                    'Upscale up to 4x with 4K output',
+                    'Face restoration and denoise',
+                    'Batch processing for 10 images',
+                ],
+            ],
+            (object) [
+                'name' => 'Pro',
+                'credits_monthly' => 1500,
+                'features' => [
+                    'Everything in Starter',
+                    '1,500 image enhancement credits per month',
+                    'Upscale up to 16x with 16K output',
+                    'All nine AI models including background removal',
+                    'Batch processing for 200 images',
+                    'API access and webhooks',
+                    'Commercial licence included',
+                ],
+            ],
+            (object) [
+                'name' => 'Scale',
+                'credits_monthly' => 10000,
+                'features' => [
+                    'Everything in Pro',
+                    '10,000 image enhancement credits per month',
+                    'Dedicated GPU capacity',
+                    'Custom storage with S3, R2 or GCS',
+                    'SSO, audit logs and team roles',
+                ],
+            ],
+        ]);
+    }
+
+    $featureRows = $plans
+        ->flatMap(fn ($plan) => $plan->features ?? [])
+        ->unique()
+        ->values();
+@endphp
+
 <section class="section pricing-compare" id="pricing-compare" aria-labelledby="pricing-compare-title">
     <div class="decor" aria-hidden="true">
         <span class="blob blob-md blob-secondary blob-section-left anim-drift"></span>
@@ -25,66 +73,30 @@
                 <thead>
                     <tr>
                         <th scope="col">{{ __('Feature') }}</th>
-                        <th scope="col">{{ __('Starter') }}</th>
-                        <th scope="col">{{ __('Pro') }}</th>
-                        <th scope="col">{{ __('Scale') }}</th>
+                        @foreach($plans as $plan)
+                            <th scope="col">{{ $plan->name }}</th>
+                        @endforeach
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <th scope="row">{{ __('Monthly credits') }}</th>
-                        <td>300</td>
-                        <td>1,500</td>
-                        <td>10,000</td>
+                        @foreach($plans as $plan)
+                            <td>{{ number_format((int) $plan->credits_monthly) }}</td>
+                        @endforeach
                     </tr>
-                    <tr>
-                        <th scope="row">{{ __('Maximum upscale') }}</th>
-                        <td>4x</td>
-                        <td>16x</td>
-                        <td>16x</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{{ __('Batch size') }}</th>
-                        <td>10</td>
-                        <td>200</td>
-                        <td>{{ __('Custom') }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{{ __('Face restoration and denoise') }}</th>
-                        <td><i data-lucide="check" class="compare-check"></i></td>
-                        <td><i data-lucide="check" class="compare-check"></i></td>
-                        <td><i data-lucide="check" class="compare-check"></i></td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{{ __('Background removal') }}</th>
-                        <td><i data-lucide="minus" class="compare-muted"></i></td>
-                        <td><i data-lucide="check" class="compare-check"></i></td>
-                        <td><i data-lucide="check" class="compare-check"></i></td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{{ __('API access and webhooks') }}</th>
-                        <td><i data-lucide="minus" class="compare-muted"></i></td>
-                        <td><i data-lucide="check" class="compare-check"></i></td>
-                        <td><i data-lucide="check" class="compare-check"></i></td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{{ __('Priority GPU queue') }}</th>
-                        <td><i data-lucide="minus" class="compare-muted"></i></td>
-                        <td><i data-lucide="check" class="compare-check"></i></td>
-                        <td><i data-lucide="check" class="compare-check"></i></td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{{ __('Dedicated capacity') }}</th>
-                        <td><i data-lucide="minus" class="compare-muted"></i></td>
-                        <td><i data-lucide="minus" class="compare-muted"></i></td>
-                        <td><i data-lucide="check" class="compare-check"></i></td>
-                    </tr>
-                    <tr>
-                        <th scope="row">{{ __('SSO and audit logs') }}</th>
-                        <td><i data-lucide="minus" class="compare-muted"></i></td>
-                        <td><i data-lucide="minus" class="compare-muted"></i></td>
-                        <td><i data-lucide="check" class="compare-check"></i></td>
-                    </tr>
+                    @foreach($featureRows as $feature)
+                        <tr>
+                            <th scope="row">{{ $feature }}</th>
+                            @foreach($plans as $plan)
+                                @if(in_array($feature, $plan->features ?? [], true))
+                                    <td><i data-lucide="check" class="compare-check"></i></td>
+                                @else
+                                    <td><i data-lucide="minus" class="compare-muted"></i></td>
+                                @endif
+                            @endforeach
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
