@@ -1,0 +1,16 @@
+{
+    "name": "Testimonials",
+    "alias": "testimonials",
+    "description": "Testimonials module",
+    "version": "1.0.0",
+    "priority": 100,
+    "providers": [
+        "App\\Modules\\Testimonials\\Providers\\TestimonialsServiceProvider"
+    ],
+    "requires": [],
+    "packages": {
+        "require": {},
+        "require-dev": {}
+    },
+    "active": true
+}

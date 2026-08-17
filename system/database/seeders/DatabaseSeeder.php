@@ -14,6 +14,7 @@ use App\Modules\PaymentGatewaySettings\Database\Seeders\PaymentGatewaySettingsSe
 use App\Modules\PricingPlan\Database\Seeders\PricingPlanSeeder;
 use App\Modules\Settings\Database\Seeders\BrandMediaSeeder;
 use App\Modules\Settings\Database\Seeders\SettingSeeder;
+use App\Modules\Testimonials\Database\Seeders\TestimonialsSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -37,6 +38,7 @@ class DatabaseSeeder extends Seeder
             AiSettingSeeder::class,
             CurrencySeeder::class,
             PricingPlanSeeder::class,
+            TestimonialsSeeder::class,
             FrontendThemeSettingSeeder::class,
             FrontendSectionSeeder::class,
             FrontendPageSeeder::class,
