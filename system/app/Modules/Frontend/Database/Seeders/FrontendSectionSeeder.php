@@ -143,6 +143,22 @@ class FrontendSectionSeeder extends Seeder
                 'data' => [],
             ],
             [
+                'name' => 'Docs Hero',
+                'slug' => 'docs-hero',
+                'type' => 'docs_hero',
+                'status' => 'published',
+                'description' => 'Documentation page hero section.',
+                'data' => [],
+            ],
+            [
+                'name' => 'Docs Content',
+                'slug' => 'docs-content',
+                'type' => 'docs_content',
+                'status' => 'published',
+                'description' => 'Documentation page content section.',
+                'data' => [],
+            ],
+            [
                 'name' => 'Terms Hero',
                 'slug' => 'terms-hero',
                 'type' => 'terms_hero',

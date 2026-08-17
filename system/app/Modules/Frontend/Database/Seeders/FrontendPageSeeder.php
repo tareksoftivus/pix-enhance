@@ -82,6 +82,23 @@ class FrontendPageSeeder extends Seeder
             ]
         );
 
+        $docs = Page::updateOrCreate(
+            ['slug' => 'docs'],
+            [
+                'title' => 'Documentation',
+                'status' => 'published',
+                'excerpt' => 'Guides for getting reliable results from PixEnhance.',
+                'default_layout' => 'default',
+                'theme_overrides' => [],
+                'is_system' => false,
+                'is_home' => false,
+                'meta_title' => 'Documentation',
+                'meta_description' => 'Learn how to upload, enhance, upscale and export images with PixEnhance.',
+                'meta_image_media_id' => null,
+                'published_at' => now(),
+            ]
+        );
+
         $terms = Page::updateOrCreate(
             ['slug' => 'terms-conditions'],
             [
@@ -174,6 +191,14 @@ class FrontendPageSeeder extends Seeder
         $featuresSections = FrontendSection::whereIn('slug', $featuresSectionSlugs)->pluck('id', 'slug');
         $featuresSectionIds = collect($featuresSectionSlugs)->map(fn (string $slug) => $featuresSections[$slug] ?? null)->all();
 
+        $docsSectionSlugs = [
+            'docs-hero',
+            'docs-content',
+        ];
+
+        $docsSections = FrontendSection::whereIn('slug', $docsSectionSlugs)->pluck('id', 'slug');
+        $docsSectionIds = collect($docsSectionSlugs)->map(fn (string $slug) => $docsSections[$slug] ?? null)->all();
+
         $termsSectionSlugs = [
             'terms-hero',
             'terms-content',
@@ -202,6 +227,7 @@ class FrontendPageSeeder extends Seeder
         $composer->syncSections($about, $aboutSectionIds);
         $composer->syncSections($pricing, $pricingSectionIds);
         $composer->syncSections($features, $featuresSectionIds);
+        $composer->syncSections($docs, $docsSectionIds);
         $composer->syncSections($terms, $termsSectionIds);
         $composer->syncSections($privacy, $privacySectionIds);
         $composer->syncSections($cookie, $cookieSectionIds);

@@ -30,6 +30,22 @@ test('published home page renders with seeded frontend content', function () {
     $response->assertSee('Launch pages that feel intentional.');
 });
 
+test('docs page renders from managed frontend content', function () {
+    $this->seed([
+        FrontendThemeSettingSeeder::class,
+        FrontendSectionSeeder::class,
+        FrontendPageSeeder::class,
+    ]);
+
+    $response = $this->get('/docs');
+
+    $response->assertOk();
+    $response->assertSee('PixEnhance Docs');
+    $response->assertSee('id="quickstart"', false);
+    $response->assertSee('id="models"', false);
+    $response->assertSee('id="sdks"', false);
+});
+
 test('unsupported section types use the fallback renderer publicly', function () {
     $this->seed([
         FrontendThemeSettingSeeder::class,

@@ -23,6 +23,8 @@ return [
             'features_hero',
             'features_overview',
             'features_ai',
+            'docs_hero',
+            'docs_content',
             'terms_hero',
             'terms_content',
             'privacy_hero',
