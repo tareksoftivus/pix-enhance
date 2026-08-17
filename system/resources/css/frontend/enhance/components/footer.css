@@ -97,6 +97,11 @@
 }
 
 /* --- Newsletter --------------------------------------------------------- */
+.footer-newsletter-wrap {
+    display: grid;
+    gap: 0.625rem;
+}
+
 .footer-newsletter {
     display: flex;
     gap: 0.5rem;
@@ -121,6 +126,19 @@
 .footer-newsletter .input:focus {
     box-shadow: none;
     background: transparent;
+}
+
+.footer-newsletter__message {
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+.footer-newsletter__message-success {
+    color: var(--color-success);
+}
+
+.footer-newsletter__message-error {
+    color: var(--color-danger);
 }
 
 /* --- Social ------------------------------------------------------------- */

@@ -9,6 +9,7 @@ use App\Modules\Frontend\Database\Seeders\FrontendPageSeeder;
 use App\Modules\Frontend\Database\Seeders\FrontendSectionSeeder;
 use App\Modules\Frontend\Database\Seeders\FrontendThemeSettingSeeder;
 use App\Modules\Languages\Database\Seeders\LanguagesSeeder;
+use App\Modules\Newsletter\Database\Seeders\NewsletterModuleSeeder;
 use App\Modules\NotificationTemplates\Database\Seeders\NotificationTemplateSeeder;
 use App\Modules\PaymentGatewaySettings\Database\Seeders\PaymentGatewaySettingsSeeder;
 use App\Modules\PricingPlan\Database\Seeders\PricingPlanSeeder;
@@ -39,6 +40,7 @@ class DatabaseSeeder extends Seeder
             CurrencySeeder::class,
             PricingPlanSeeder::class,
             TestimonialsSeeder::class,
+            NewsletterModuleSeeder::class,
             FrontendThemeSettingSeeder::class,
             FrontendSectionSeeder::class,
             FrontendPageSeeder::class,

@@ -44,7 +44,7 @@
     ]
   },
   "resources/js/frontend/enhance/main.js": {
-    "file": "assets/main-Dd1paVFA.js",
+    "file": "assets/main-CS9v8d3f.js",
     "name": "main",
     "src": "resources/js/frontend/enhance/main.js",
     "isEntry": true,
@@ -52,7 +52,7 @@
       "_module.esm-L4ggBBWN.js"
     ],
     "css": [
-      "assets/main-B9DTNQdS.css"
+      "assets/main-Ckv7PJwm.css"
     ]
   }
 }

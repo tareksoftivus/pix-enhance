@@ -10,13 +10,22 @@
                     Trusted by photographers, marketplaces and product teams in 90+ countries.
                 </p>
 
-                <form class="footer-newsletter" action="#" method="post">
-                    <label class="sr-only" for="footer-newsletter-email">Email address</label>
-                    <input class="input" type="email" id="footer-newsletter-email" name="email" placeholder="you@company.com" autocomplete="email" required>
-                    <button type="submit" class="btn btn-primary btn-sm" data-ripple>
-                        Subscribe
-                    </button>
-                </form>
+                <div class="footer-newsletter-wrap">
+                    <form class="footer-newsletter" action="{{ route('newsletter.subscribe') }}" method="post">
+                        @csrf
+                        <label class="sr-only" for="footer-newsletter-email">Email address</label>
+                        <input class="input" type="email" id="footer-newsletter-email" name="email" placeholder="you@company.com" autocomplete="email" required>
+                        <button type="submit" class="btn btn-primary btn-sm" data-ripple>
+                            Subscribe
+                        </button>
+                    </form>
+
+                    @if(session('newsletter_success'))
+                        <p class="footer-newsletter__message footer-newsletter__message-success">{{ session('newsletter_success') }}</p>
+                    @elseif($errors->has('email'))
+                        <p class="footer-newsletter__message footer-newsletter__message-error">{{ $errors->first('email') }}</p>
+                    @endif
+                </div>
 
                 <ul class="social-row">
                     <li>
