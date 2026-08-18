@@ -20,12 +20,14 @@ class BrandMediaSeeder extends Seeder
 
         $defaults = [
             'site_logo' => [
-                'path' => 'brand/softivus-logo.png',
+                'source' => 'assets/frontend/enhance/img/logo.png',
+                'path' => 'brand/logo.png',
                 'name' => 'Default Logo',
                 'mime_type' => 'image/png',
                 'extension' => 'png',
             ],
             'site_favicon' => [
+                'source' => 'assets/frontend/enhance/favicon.png',
                 'path' => 'brand/favicon.png',
                 'name' => 'Default Favicon',
                 'mime_type' => 'image/png',
@@ -34,9 +36,9 @@ class BrandMediaSeeder extends Seeder
         ];
 
         foreach ($defaults as $settingKey => $meta) {
-            $absolute = public_path('assets/uploads/'.$meta['path']);
+            $source = public_path($meta['source']);
 
-            if (! is_file($absolute)) {
+            if (! is_file($source)) {
                 continue;
             }
 
@@ -49,9 +51,19 @@ class BrandMediaSeeder extends Seeder
                     'mime_type' => $meta['mime_type'],
                     'extension' => $meta['extension'],
                     'type' => 'image',
-                    'size' => filesize($absolute) ?: 0,
+                    'size' => filesize($source) ?: 0,
                 ]
             );
+
+            $absolute = public_path('assets/uploads/'.$meta['path']);
+
+            if (! is_file($absolute)) {
+                if (! is_dir(dirname($absolute))) {
+                    mkdir(dirname($absolute), 0755, true);
+                }
+
+                copy($source, $absolute);
+            }
 
             // Only point the setting at the default when the admin hasn't set one.
             if (! $settings->get($settingKey)) {

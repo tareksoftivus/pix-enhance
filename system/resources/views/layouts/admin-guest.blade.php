@@ -13,8 +13,8 @@
     @php
         $siteName = setting('site_name', config('app.name', 'Admin Panel'));
         $settingLogo = setting('site_logo') && media_url(setting('site_logo')) ? media_url(setting('site_logo')) : null;
-        $brandLogo = $settingLogo ?? asset('assets/uploads/brand/softivus-logo.png');
-        $brandMark = $settingLogo ?? asset('assets/uploads/brand/softivus-mark.png');
+        $brandLogo = $settingLogo ?? asset('assets/frontend/enhance/img/logo.png');
+        $brandMark = $settingLogo ?? asset('assets/frontend/enhance/favicon.png');
         $year = now()->year;
     @endphp
 

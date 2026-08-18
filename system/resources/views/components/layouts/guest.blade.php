@@ -33,7 +33,7 @@
     @php
         $siteName = setting('site_name', config('app.name', 'Admin Panel'));
         $settingLogo = setting('site_logo') && media_url(setting('site_logo')) ? media_url(setting('site_logo')) : null;
-        $brandLogo = $settingLogo ?? asset('assets/uploads/brand/softivus-logo.png');
+        $brandLogo = $settingLogo ?? asset('assets/frontend/enhance/img/logo.png');
     @endphp
 
     {{-- Auth Card --}}

@@ -30,7 +30,7 @@
         $settingLogo = setting('site_logo') && media_url(setting('site_logo')) ? media_url(setting('site_logo')) : null;
         // Prefer the uploaded site logo (a wide wordmark); it renders at its
         // natural aspect. Only the packaged square mark uses the rounded badge.
-        $brandLogo = $settingLogo ?? asset('assets/uploads/brand/softivus-logo.png');
+        $brandLogo = $settingLogo ?? asset('assets/frontend/enhance/img/logo.png');
     @endphp
 
     @hasSection('guest_full')

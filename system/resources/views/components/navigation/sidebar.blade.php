@@ -5,11 +5,11 @@
     $siteName = setting('site_name', config('app.name', 'Admin Panel'));
     $settingLogo = setting('site_logo') && media_url(setting('site_logo')) ? media_url(setting('site_logo')) : null;
     $settingLogoDark = setting('site_logo_dark') && media_url(setting('site_logo_dark')) ? media_url(setting('site_logo_dark')) : null;
-    $brandLogo = $settingLogo ?? asset('assets/uploads/brand/softivus-logo.png');
-    // Dark variant: the uploaded dark logo, or the packaged inverse when the
-    // packaged wordmark is in use. Null means "no swap" (custom logo only).
-    $brandLogoDark = $settingLogoDark ?? ($settingLogo ? null : asset('assets/uploads/brand/softivus-logo-inverse.png'));
-    $brandMark = $settingLogo ?? asset('assets/uploads/brand/softivus-mark.png');
+    $brandLogo = $settingLogo ?? asset('assets/frontend/enhance/img/logo.png');
+    // Dark variant: only the uploaded dark logo; the packaged wordmark
+    // already suits both themes, so no swap is needed for it.
+    $brandLogoDark = $settingLogoDark;
+    $brandMark = $settingLogo ?? asset('assets/frontend/enhance/favicon.png');
 
     // Group navigation items by their 'group' key
     $groups = [];
@@ -31,15 +31,15 @@
             @if ($brandLogoDark)
                 {{-- Dark variant available — swap by theme. --}}
                 <img src="{{ $brandLogo }}" alt="{{ $siteName }}" class="sidebar-brand-wordmark h-10 w-auto max-w-44 shrink-0 object-contain dark:hidden"
-                     data-live-logo="site_logo" data-default-src="{{ asset('assets/uploads/brand/softivus-logo.png') }}">
+                     data-live-logo="site_logo" data-default-src="{{ asset('assets/frontend/enhance/img/logo.png') }}">
                 <img src="{{ $brandLogoDark }}" alt="{{ $siteName }}" class="sidebar-brand-wordmark hidden h-10 w-auto max-w-44 shrink-0 object-contain dark:block"
-                     data-live-logo="site_logo_dark" data-default-src="{{ asset('assets/uploads/brand/softivus-logo-inverse.png') }}">
+                     data-live-logo="site_logo_dark" data-default-src="{{ asset('assets/frontend/enhance/img/logo.png') }}">
             @else
                 <img src="{{ $brandLogo }}" alt="{{ $siteName }}" class="sidebar-brand-wordmark h-10 w-auto max-w-44 shrink-0 object-contain"
-                     data-live-logo="site_logo" data-default-src="{{ asset('assets/uploads/brand/softivus-logo.png') }}">
+                     data-live-logo="site_logo" data-default-src="{{ asset('assets/frontend/enhance/img/logo.png') }}">
             @endif
             <img src="{{ $brandMark }}" alt="{{ $siteName }}" class="sidebar-brand-mark hidden h-10 w-10 shrink-0 object-contain"
-                 data-live-logo="site_logo" data-default-src="{{ asset('assets/uploads/brand/softivus-mark.png') }}">
+                 data-live-logo="site_logo" data-default-src="{{ asset('assets/frontend/enhance/favicon.png') }}">
         </a>
 
         {{-- Mobile Close Button --}}
