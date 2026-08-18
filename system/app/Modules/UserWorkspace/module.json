@@ -1,0 +1,18 @@
+{
+    "name": "User Workspace",
+    "alias": "user-workspace",
+    "description": "User panel workspace preferences, summaries and dashboard composition",
+    "version": "1.0.0",
+    "priority": 65,
+    "providers": [
+        "App\\Modules\\UserWorkspace\\Providers\\UserWorkspaceServiceProvider"
+    ],
+    "requires": [
+        "shared"
+    ],
+    "packages": {
+        "require": {},
+        "require-dev": {}
+    },
+    "active": true
+}

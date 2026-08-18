@@ -1,8 +1,16 @@
 @php
     $securityErrorFields = ['current_password', 'password', 'password_confirmation'];
-    $settingsInitialTab = session()->has('recovery_codes') || collect($securityErrorFields)->contains(fn (string $field) => $errors->has($field))
-        ? 'security'
-        : 'profile';
+    $notificationErrorFields = ['render_finished', 'credits_low', 'weekly_summary', 'product_news', 'desktop_notifications_enabled', 'completion_sound_enabled'];
+    $defaultsErrorFields = ['default_model', 'default_scale', 'default_format', 'face_restoration', 'auto_download', 'source_retention_days'];
+    $settingsInitialTab = match (true) {
+        session()->has('recovery_codes') || collect($securityErrorFields)->contains(fn (string $field) => $errors->has($field)) => 'security',
+        collect($notificationErrorFields)->contains(fn (string $field) => $errors->has($field)) => 'notifications',
+        collect($defaultsErrorFields)->contains(fn (string $field) => $errors->has($field)) => 'defaults',
+        default => 'profile',
+    };
+    $workspacePreferences = $workspacePreferences ?? [];
+    $notificationPreferences = $workspacePreferences['notifications'] ?? [];
+    $renderDefaults = $workspacePreferences['render_defaults'] ?? [];
 @endphp
 
 <x-layouts.user :title="__('Settings')" :search-placeholder="__('Search settings')">
@@ -355,12 +363,15 @@
                     <p class="panel__subtitle">{{ __('Sent to :email.', ['email' => $user->email]) }}</p>
                 </div>
 
-                <div class="panel__body">
+                <form class="panel__body" action="{{ route('user.workspace.notifications.update') }}" method="post" id="notification-preferences-form">
+                    @csrf
+                    @method('PUT')
+
                     @foreach ([
-                        ['name' => 'notify_render', 'label' => __('Render finished'), 'hint' => __('Only for batches over 20 images — single renders are usually done before the email lands.'), 'checked' => true, 'sr' => __('Email me when a render finishes')],
-                        ['name' => 'notify_credits', 'label' => __('Credits running low'), 'hint' => __('A single warning when you drop below 10% of your monthly allowance.'), 'checked' => true, 'sr' => __('Email me when credits run low')],
-                        ['name' => 'notify_summary', 'label' => __('Weekly summary'), 'hint' => __('Renders, credits spent and storage used, every Monday.'), 'sr' => __('Send me a weekly summary')],
-                        ['name' => 'notify_news', 'label' => __('Product news'), 'hint' => __('New models and features. Roughly once a month, never more.'), 'sr' => __('Send me product news')],
+                        ['name' => 'render_finished', 'label' => __('Render finished'), 'hint' => __('Only for batches over 20 images — single renders are usually done before the email lands.'), 'sr' => __('Email me when a render finishes')],
+                        ['name' => 'credits_low', 'label' => __('Credits running low'), 'hint' => __('A single warning when you drop below 10% of your monthly allowance.'), 'sr' => __('Email me when credits run low')],
+                        ['name' => 'weekly_summary', 'label' => __('Weekly summary'), 'hint' => __('Renders, credits spent and storage used, every Monday.'), 'sr' => __('Send me a weekly summary')],
+                        ['name' => 'product_news', 'label' => __('Product news'), 'hint' => __('New models and features. Roughly once a month, never more.'), 'sr' => __('Send me product news')],
                     ] as $item)
                         <div class="setting-row">
                             <span class="setting-row__text">
@@ -369,13 +380,19 @@
                             </span>
                             <span class="setting-row__control">
                                 <label class="switch-field">
-                                    <input class="switch-field__input" type="checkbox" name="{{ $item['name'] }}" @checked($item['checked'] ?? false)>
+                                    <input type="hidden" name="{{ $item['name'] }}" value="0">
+                                    <input class="switch-field__input" type="checkbox" name="{{ $item['name'] }}" value="1" @checked((bool) ($notificationPreferences[$item['name']] ?? false))>
                                     <span class="switch-field__track"></span>
                                     <span class="sr-only">{{ $item['sr'] }}</span>
                                 </label>
                             </span>
                         </div>
                     @endforeach
+                </form>
+
+                <div class="panel__foot">
+                    <p class="panel__note">{{ __('Email preferences are used by render, credit and product updates.') }}</p>
+                    <button type="submit" class="btn btn-primary btn-sm" form="notification-preferences-form" data-ripple>{{ __('Save notifications') }}</button>
                 </div>
             </section>
 
@@ -394,7 +411,12 @@
                             <span class="setting-row__hint">{{ __('Requires permission from your browser.') }}</span>
                         </span>
                         <span class="setting-row__control">
-                            <button type="button" class="btn btn-outline btn-sm">{{ __('Enable') }}</button>
+                            <label class="switch-field">
+                                <input type="hidden" name="desktop_notifications_enabled" value="0" form="notification-preferences-form">
+                                <input class="switch-field__input" type="checkbox" name="desktop_notifications_enabled" value="1" form="notification-preferences-form" @checked((bool) ($workspacePreferences['desktop_notifications_enabled'] ?? false))>
+                                <span class="switch-field__track"></span>
+                                <span class="sr-only">{{ __('Enable desktop notifications') }}</span>
+                            </label>
                         </span>
                     </div>
 
@@ -405,7 +427,8 @@
                         </span>
                         <span class="setting-row__control">
                             <label class="switch-field">
-                                <input class="switch-field__input" type="checkbox" name="notify_sound">
+                                <input type="hidden" name="completion_sound_enabled" value="0" form="notification-preferences-form">
+                                <input class="switch-field__input" type="checkbox" name="completion_sound_enabled" value="1" form="notification-preferences-form" @checked((bool) ($workspacePreferences['completion_sound_enabled'] ?? false))>
                                 <span class="switch-field__track"></span>
                                 <span class="sr-only">{{ __('Play a sound on completion') }}</span>
                             </label>
@@ -426,7 +449,10 @@
                     <p class="panel__subtitle">{{ __('What every new render starts with. You can still change it per job.') }}</p>
                 </div>
 
-                <div class="panel__body">
+                <form class="panel__body" action="{{ route('user.workspace.render-defaults.update') }}" method="post" id="render-defaults-form">
+                    @csrf
+                    @method('PUT')
+
                     <div class="setting-row">
                         <span class="setting-row__text">
                             <span class="setting-row__label">{{ __('Default model') }}</span>
@@ -435,10 +461,10 @@
                         <span class="setting-row__control">
                             <label class="sr-only" for="def-model">{{ __('Default model') }}</label>
                             <select class="select input-sm" id="def-model" name="default_model">
-                                <option selected>{{ __('Auto') }}</option>
-                                <option>Enhance-XL v3</option>
-                                <option>Photo Real v2</option>
-                                <option>Illustration v1</option>
+                                <option value="auto" @selected(($renderDefaults['default_model'] ?? 'auto') === 'auto')>{{ __('Auto') }}</option>
+                                <option value="enhance-xl" @selected(($renderDefaults['default_model'] ?? 'auto') === 'enhance-xl')>{{ __('Enhance-XL v3') }}</option>
+                                <option value="photo-real" @selected(($renderDefaults['default_model'] ?? 'auto') === 'photo-real')>{{ __('Photo Real v2') }}</option>
+                                <option value="illustration" @selected(($renderDefaults['default_model'] ?? 'auto') === 'illustration')>{{ __('Illustration v1') }}</option>
                             </select>
                         </span>
                     </div>
@@ -452,7 +478,7 @@
                             <span class="radio-group">
                                 @foreach (['2', '4', '8'] as $scale)
                                     <span class="radio-group__option">
-                                        <input class="radio-group__input" type="radio" id="def-scale-{{ $scale }}" name="default_scale" value="{{ $scale }}" @checked($scale === '4')>
+                                        <input class="radio-group__input" type="radio" id="def-scale-{{ $scale }}" name="default_scale" value="{{ $scale }}" @checked((string) ($renderDefaults['default_scale'] ?? '4') === $scale)>
                                         <label class="radio-group__label" for="def-scale-{{ $scale }}">{{ $scale }}×</label>
                                     </span>
                                 @endforeach
@@ -468,16 +494,15 @@
                         <span class="setting-row__control">
                             <label class="sr-only" for="def-format">{{ __('Default output format') }}</label>
                             <select class="select input-sm" id="def-format" name="default_format">
-                                <option selected>PNG</option>
-                                <option>JPG</option>
-                                <option>WEBP</option>
-                                <option>TIFF</option>
+                                @foreach (['png', 'jpg', 'webp', 'tiff'] as $format)
+                                    <option value="{{ $format }}" @selected(($renderDefaults['default_format'] ?? 'png') === $format)>{{ strtoupper($format) }}</option>
+                                @endforeach
                             </select>
                         </span>
                     </div>
 
                     @foreach ([
-                        ['name' => 'default_face', 'label' => __('Face restoration'), 'hint' => __('Runs automatically whenever a face is detected.'), 'sr' => __('Enable face restoration by default'), 'checked' => true],
+                        ['name' => 'face_restoration', 'label' => __('Face restoration'), 'hint' => __('Runs automatically whenever a face is detected.'), 'sr' => __('Enable face restoration by default')],
                         ['name' => 'auto_download', 'label' => __('Download when finished'), 'hint' => __('Saves the result to your device as soon as it is ready.'), 'sr' => __('Download automatically when a render finishes')],
                     ] as $item)
                         <div class="setting-row">
@@ -487,18 +512,19 @@
                             </span>
                             <span class="setting-row__control">
                                 <label class="switch-field">
-                                    <input class="switch-field__input" type="checkbox" name="{{ $item['name'] }}" @checked($item['checked'] ?? false)>
+                                    <input type="hidden" name="{{ $item['name'] }}" value="0">
+                                    <input class="switch-field__input" type="checkbox" name="{{ $item['name'] }}" value="1" @checked((bool) ($renderDefaults[$item['name']] ?? false))>
                                     <span class="switch-field__track"></span>
                                     <span class="sr-only">{{ $item['sr'] }}</span>
                                 </label>
                             </span>
                         </div>
                     @endforeach
-                </div>
+                </form>
 
                 <div class="panel__foot">
                     <p class="panel__note">{{ __('Defaults apply to new renders only.') }}</p>
-                    <button type="submit" class="btn btn-primary btn-sm" data-ripple>{{ __('Save defaults') }}</button>
+                    <button type="submit" class="btn btn-primary btn-sm" form="render-defaults-form" data-ripple>{{ __('Save defaults') }}</button>
                 </div>
             </section>
 
@@ -508,7 +534,7 @@
                         <i data-lucide="database"></i>
                         {{ __('Storage') }}
                     </h2>
-                    <p class="panel__subtitle">{{ __('6.1 GB of 50 GB used on the Studio plan.') }}</p>
+                    <p class="panel__subtitle">{{ __('Storage limits will connect to plans when the Billing module is implemented.') }}</p>
                 </div>
 
                 <div class="panel__body">
@@ -523,11 +549,10 @@
                         </span>
                         <span class="setting-row__control">
                             <label class="sr-only" for="def-retention">{{ __('Keep originals for') }}</label>
-                            <select class="select input-sm" id="def-retention" name="retention">
-                                <option>{{ __('24 hours') }}</option>
-                                <option selected>{{ __('7 days') }}</option>
-                                <option>{{ __('30 days') }}</option>
-                                <option>{{ __('90 days') }}</option>
+                            <select class="select input-sm" id="def-retention" name="source_retention_days" form="render-defaults-form">
+                                @foreach ([1 => __('24 hours'), 7 => __('7 days'), 30 => __('30 days'), 90 => __('90 days')] as $days => $label)
+                                    <option value="{{ $days }}" @selected((int) ($workspacePreferences['source_retention_days'] ?? 7) === $days)>{{ $label }}</option>
+                                @endforeach
                             </select>
                         </span>
                     </div>
@@ -535,15 +560,20 @@
                     <div class="setting-row">
                         <span class="setting-row__text">
                             <span class="setting-row__label">{{ __('Clear render history') }}</span>
-                            <span class="setting-row__hint">{{ __('Removes all 248 stored results. Credits already spent are not refunded.') }}</span>
+                            <span class="setting-row__hint">{{ __('Render history cleanup will connect to stored jobs once the render module is implemented.') }}</span>
                         </span>
                         <span class="setting-row__control">
-                            <button type="button" class="btn btn-danger-soft btn-sm">
+                            <button type="button" class="btn btn-danger-soft btn-sm is-disabled" aria-disabled="true" disabled>
                                 <i data-lucide="trash-2"></i>
                                 {{ __('Clear history') }}
                             </button>
                         </span>
                     </div>
+                </div>
+
+                <div class="panel__foot">
+                    <p class="panel__note">{{ __('Retention applies to source files uploaded after saving.') }}</p>
+                    <button type="submit" class="btn btn-primary btn-sm" form="render-defaults-form" data-ripple>{{ __('Save storage') }}</button>
                 </div>
             </section>
         </div>

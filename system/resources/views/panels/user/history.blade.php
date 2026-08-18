@@ -1,19 +1,11 @@
 <x-layouts.user :title="__('History')" :search-placeholder="__('Search activity')">
     @php
-        $events = [
-            ['type' => 'render', 'icon' => 'wand-sparkles', 'title' => __('Enhanced palm-grove.jpg'), 'detail' => __('Upscaler · 8× · 7680 × 5760'), 'when' => __('12 min ago'), 'meta' => '2 ' . __('credits')],
-            ['type' => 'render', 'icon' => 'scan-face', 'title' => __('Restored studio-portrait.png'), 'detail' => __('Face restoration · 4×'), 'when' => __('1 hr ago'), 'meta' => '3 ' . __('credits')],
-            ['type' => 'billing', 'icon' => 'credit-card', 'title' => __('Purchased 500 credits'), 'detail' => __('Boost pack · Visa •••• 4242'), 'when' => __('3 hrs ago'), 'meta' => '$25.00'],
-            ['type' => 'render', 'icon' => 'eraser', 'title' => __('Removed background from lookbook-03.png'), 'detail' => __('Background removal · PNG'), 'when' => __('Yesterday'), 'meta' => '1 ' . __('credit')],
-            ['type' => 'support', 'icon' => 'life-buoy', 'title' => __('Opened ticket TKT-100001'), 'detail' => __('Unable to reset my password'), 'when' => __('Yesterday'), 'meta' => null],
-            ['type' => 'security', 'icon' => 'shield-check', 'title' => __('Signed in from a new device'), 'detail' => __('Chrome on macOS · Dhaka, Bangladesh'), 'when' => __('2 days ago'), 'meta' => null],
-            ['type' => 'render', 'icon' => 'wand-sparkles', 'title' => __('Enhanced alpine-ridge.jpg'), 'detail' => __('Upscaler · 4× · 3840 × 2880'), 'when' => __('3 days ago'), 'meta' => '2 ' . __('credits')],
-            ['type' => 'billing', 'icon' => 'credit-card', 'title' => __('Studio plan renewed'), 'detail' => __('Monthly subscription · Visa •••• 4242'), 'when' => __('4 days ago'), 'meta' => '$49.00'],
-            ['type' => 'account', 'icon' => 'user', 'title' => __('Updated profile details'), 'detail' => __('Changed display name and avatar'), 'when' => __('5 days ago'), 'meta' => null],
-            ['type' => 'render', 'icon' => 'wand-sparkles', 'title' => __('Enhanced beach-cove.jpg'), 'detail' => __('Upscaler · 4× · 3840 × 2880'), 'when' => __('2 days ago'), 'meta' => '2 ' . __('credits')],
-            ['type' => 'support', 'icon' => 'circle-check', 'title' => __('Ticket TKT-099842 resolved'), 'detail' => __('Billing question about invoice #INV-0042'), 'when' => __('1 week ago'), 'meta' => null],
-            ['type' => 'security', 'icon' => 'key-round', 'title' => __('Two-factor authentication enabled'), 'detail' => __('Authenticator app added to your account'), 'when' => __('1 week ago'), 'meta' => null],
-        ];
+        $events = $history['events'];
+        $counts = $history['counts'];
+        $stats = $history['stats'];
+        $filters = $history['filters'];
+        $activeType = $filters['type'];
+        $search = $filters['search'];
 
         $typeMeta = [
             'render' => ['label' => __('Renders'), 'badge' => 'badge-primary'],
@@ -23,14 +15,26 @@
             'account' => ['label' => __('Account'), 'badge' => ''],
         ];
 
-        $counts = collect($events)->countBy('type');
+        $tabs = [
+            ['key' => 'all', 'icon' => 'layout-grid', 'label' => __('All')],
+            ['key' => 'render', 'icon' => 'wand-sparkles', 'label' => __('Renders')],
+            ['key' => 'billing', 'icon' => 'credit-card', 'label' => __('Billing')],
+            ['key' => 'support', 'icon' => 'life-buoy', 'label' => __('Support')],
+            ['key' => 'security', 'icon' => 'shield-check', 'label' => __('Security')],
+            ['key' => 'account', 'icon' => 'user', 'label' => __('Account')],
+        ];
+
+        $queryFor = fn (string $type) => array_filter([
+            'type' => $type === 'all' ? null : $type,
+            'search' => $search ?: null,
+        ], fn ($value) => $value !== null && $value !== '');
     @endphp
 
     <div class="dash__head">
         <div>
             <h1 class="dash__title">{{ __('History') }}</h1>
             <p class="dash__subtitle">
-                {{ __('A timeline of everything that happened on your account — renders, billing, support and security.') }}
+                {{ __('A timeline of account, billing, support and security activity from your workspace.') }}
             </p>
         </div>
 
@@ -46,23 +50,23 @@
         <div class="dash-stat">
             <span class="dash-stat__icon" aria-hidden="true"><i data-lucide="activity"></i></span>
             <span>
-                <span class="dash-stat__value">{{ count($events) }}</span>
+                <span class="dash-stat__value">{{ number_format($stats['all'] ?? 0) }}</span>
                 <span class="dash-stat__label">{{ __('Total events') }}</span>
             </span>
         </div>
 
         <div class="dash-stat">
-            <span class="dash-stat__icon dash-stat__icon-accent" aria-hidden="true"><i data-lucide="wand-sparkles"></i></span>
+            <span class="dash-stat__icon dash-stat__icon-accent" aria-hidden="true"><i data-lucide="life-buoy"></i></span>
             <span>
-                <span class="dash-stat__value">{{ $counts->get('render', 0) }}</span>
-                <span class="dash-stat__label">{{ __('Renders') }}</span>
+                <span class="dash-stat__value">{{ number_format($stats['support'] ?? 0) }}</span>
+                <span class="dash-stat__label">{{ __('Support events') }}</span>
             </span>
         </div>
 
         <div class="dash-stat">
             <span class="dash-stat__icon" aria-hidden="true"><i data-lucide="credit-card"></i></span>
             <span>
-                <span class="dash-stat__value">{{ $counts->get('billing', 0) }}</span>
+                <span class="dash-stat__value">{{ number_format($stats['billing'] ?? 0) }}</span>
                 <span class="dash-stat__label">{{ __('Billing events') }}</span>
             </span>
         </div>
@@ -70,7 +74,7 @@
         <div class="dash-stat">
             <span class="dash-stat__icon dash-stat__icon-accent" aria-hidden="true"><i data-lucide="shield-check"></i></span>
             <span>
-                <span class="dash-stat__value">{{ $counts->get('security', 0) }}</span>
+                <span class="dash-stat__value">{{ number_format($stats['security'] ?? 0) }}</span>
                 <span class="dash-stat__label">{{ __('Security events') }}</span>
             </span>
         </div>
@@ -78,83 +82,154 @@
 
     <section class="panel" aria-labelledby="history-title">
         <div class="panel__head">
-            <h2 class="panel__title" id="history-title">
-                <i data-lucide="clock"></i>
-                {{ __('Activity timeline') }}
-            </h2>
-            <p class="panel__subtitle">{{ __('Filter by type to find a specific render, invoice or account change.') }}</p>
+            <div>
+                <h2 class="panel__title" id="history-title">
+                    <i data-lucide="clock"></i>
+                    {{ __('Activity timeline') }}
+                </h2>
+                <p class="panel__subtitle">{{ __('Filter by type or search for a ticket, payment, device or account event.') }}</p>
+            </div>
+
+            <form class="cluster cluster-sm" action="{{ route('user.history') }}" method="get" role="search">
+                @if ($activeType !== 'all')
+                    <input type="hidden" name="type" value="{{ $activeType }}">
+                @endif
+
+                <label class="sr-only" for="history-search">{{ __('Search activity') }}</label>
+                <div class="input-group">
+                    <span class="input-group__icon" aria-hidden="true"><i data-lucide="search"></i></span>
+                    <input class="input input-sm" type="search" id="history-search" name="search"
+                           value="{{ $search }}" placeholder="{{ __('Search activity') }}" autocomplete="off">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-sm" data-ripple>
+                    <i data-lucide="search"></i>
+                    {{ __('Search') }}
+                </button>
+
+                @if ($search !== '')
+                    <a class="btn btn-outline btn-sm" href="{{ route('user.history', array_filter([
+                        'type' => $activeType === 'all' ? null : $activeType,
+                    ])) }}">
+                        <i data-lucide="x"></i>
+                        {{ __('Clear') }}
+                    </a>
+                @endif
+            </form>
         </div>
 
         <div class="panel__body">
-            <div class="tabs tabs-underline" x-data="tabs('all')">
-                <div class="tabs__list" role="tablist" aria-label="{{ __('Filter activity by type') }}" @keydown="onKeydown">
-                    @foreach ([
-                        ['key' => 'all', 'icon' => 'layout-grid', 'label' => __('All'), 'count' => count($events)],
-                        ['key' => 'render', 'icon' => 'wand-sparkles', 'label' => __('Renders'), 'count' => $counts->get('render', 0)],
-                        ['key' => 'billing', 'icon' => 'credit-card', 'label' => __('Billing'), 'count' => $counts->get('billing', 0)],
-                        ['key' => 'support', 'icon' => 'life-buoy', 'label' => __('Support'), 'count' => $counts->get('support', 0)],
-                        ['key' => 'security', 'icon' => 'shield-check', 'label' => __('Security'), 'count' => $counts->get('security', 0)],
-                    ] as $tab)
-                        <button type="button" class="tabs__tab" role="tab" id="history-tab-{{ $tab['key'] }}"
-                                :class="isActive('{{ $tab['key'] }}') && 'is-active'" :aria-selected="isActive('{{ $tab['key'] }}')"
-                                :tabindex="isActive('{{ $tab['key'] }}') ? 0 : -1" aria-controls="history-panel-{{ $tab['key'] }}"
-                                @click="select('{{ $tab['key'] }}')">
+            <div class="tabs tabs-underline">
+                <div class="tabs__list" role="tablist" aria-label="{{ __('Filter activity by type') }}">
+                    @foreach ($tabs as $tab)
+                        @php
+                            $isActive = $activeType === $tab['key'];
+                            $tabQuery = $queryFor($tab['key']);
+                        @endphp
+
+                        <a class="tabs__tab {{ $isActive ? 'is-active' : '' }}" role="tab"
+                           id="history-tab-{{ $tab['key'] }}" aria-selected="{{ $isActive ? 'true' : 'false' }}"
+                           aria-controls="history-panel" href="{{ route('user.history', $tabQuery) }}">
                             <i data-lucide="{{ $tab['icon'] }}"></i>
                             {{ $tab['label'] }}
-                            @if ($tab['count'] > 0)
-                                <span class="tabs__count">{{ $tab['count'] }}</span>
+                            @if (($counts[$tab['key']] ?? 0) > 0)
+                                <span class="tabs__count">{{ number_format($counts[$tab['key']]) }}</span>
                             @endif
-                        </button>
+                        </a>
                     @endforeach
                 </div>
 
-                <div class="tabs__panel" role="tabpanel" id="history-panel-all" aria-labelledby="history-tab-all" x-show="isActive('all')" x-cloak>
-                    <div class="timeline">
-                        @foreach ($events as $event)
-                            @include('panels.user.partials.history-event', ['event' => $event, 'typeMeta' => $typeMeta])
-                        @endforeach
-                    </div>
+                <div class="tabs__panel" role="tabpanel" id="history-panel" aria-labelledby="history-tab-{{ $activeType }}">
+                    @if ($events->isEmpty())
+                        <div class="empty-state">
+                            <span class="empty-state__icon" aria-hidden="true"><i data-lucide="clock"></i></span>
+                            <h3>
+                                @if ($search !== '')
+                                    {{ __('No activity matches your search') }}
+                                @elseif ($activeType === 'all')
+                                    {{ __('No activity yet') }}
+                                @else
+                                    {{ __('No :type activity yet', ['type' => strtolower($typeMeta[$activeType]['label'] ?? $activeType)]) }}
+                                @endif
+                            </h3>
+                            <p>
+                                @if ($activeType === 'render')
+                                    {{ __('Render history will appear here once the render jobs module is connected.') }}
+                                @else
+                                    {{ __('New account activity will show up here as it happens.') }}
+                                @endif
+                            </p>
+                        </div>
+                    @else
+                        <div class="timeline">
+                            @foreach ($events as $event)
+                                @include('panels.user.partials.history-event', ['event' => $event, 'typeMeta' => $typeMeta])
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
-
-                @foreach (['render', 'billing', 'support', 'security'] as $type)
-                    <div class="tabs__panel" role="tabpanel" id="history-panel-{{ $type }}" aria-labelledby="history-tab-{{ $type }}"
-                         x-show="isActive('{{ $type }}')" x-cloak>
-                        @php $filtered = collect($events)->where('type', $type); @endphp
-
-                        @if ($filtered->isEmpty())
-                            <div class="empty-state">
-                                <span class="empty-state__icon" aria-hidden="true"><i data-lucide="clock"></i></span>
-                                <h3>{{ __('No :type activity yet', ['type' => strtolower($typeMeta[$type]['label'])]) }}</h3>
-                                <p>{{ __('Activity of this type will appear here as it happens.') }}</p>
-                            </div>
-                        @else
-                            <div class="timeline">
-                                @foreach ($filtered as $event)
-                                    @include('panels.user.partials.history-event', ['event' => $event, 'typeMeta' => $typeMeta])
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
-                @endforeach
             </div>
         </div>
 
-        <div class="panel__foot">
-            <p class="pagination__meta">{{ __('Showing 1-:count of 248 events', ['count' => count($events)]) }}</p>
+        @if ($events->total() > 0)
+            @php
+                $currentPage = $events->currentPage();
+                $lastPage = $events->lastPage();
+                $windowStart = max(2, $currentPage - 1);
+                $windowEnd = min($lastPage - 1, $currentPage + 1);
+            @endphp
 
-            <nav class="pagination" aria-label="{{ __('Activity pages') }}">
-                <span class="pagination__item is-disabled" aria-disabled="true" aria-label="{{ __('Previous page') }}">
-                    <i data-lucide="chevron-left"></i>
-                </span>
-                <span class="pagination__item is-active" aria-current="page">1</span>
-                <a class="pagination__item" href="#">2</a>
-                <a class="pagination__item" href="#">3</a>
-                <span class="pagination__gap">...</span>
-                <a class="pagination__item" href="#">21</a>
-                <a class="pagination__item" href="#" aria-label="{{ __('Next page') }}">
-                    <i data-lucide="chevron-right"></i>
-                </a>
-            </nav>
-        </div>
+            <div class="panel__foot">
+                <p class="pagination__meta">
+                    {{ __('Showing :first-:last of :total events', [
+                        'first' => number_format($events->firstItem()),
+                        'last' => number_format($events->lastItem()),
+                        'total' => number_format($events->total()),
+                    ]) }}
+                </p>
+
+                @if ($lastPage > 1)
+                    <nav class="pagination" aria-label="{{ __('Activity pages') }}">
+                        @if ($events->onFirstPage())
+                            <span class="pagination__item is-disabled" aria-disabled="true" aria-label="{{ __('Previous page') }}">
+                                <i data-lucide="chevron-left"></i>
+                            </span>
+                        @else
+                            <a class="pagination__item" href="{{ $events->previousPageUrl() }}" aria-label="{{ __('Previous page') }}">
+                                <i data-lucide="chevron-left"></i>
+                            </a>
+                        @endif
+
+                        <a class="pagination__item {{ $currentPage === 1 ? 'is-active' : '' }}" href="{{ $events->url(1) }}" @if ($currentPage === 1) aria-current="page" @endif>1</a>
+
+                        @if ($windowStart > 2)
+                            <span class="pagination__gap">...</span>
+                        @endif
+
+                        @for ($page = $windowStart; $page <= $windowEnd; $page++)
+                            <a class="pagination__item {{ $currentPage === $page ? 'is-active' : '' }}" href="{{ $events->url($page) }}" @if ($currentPage === $page) aria-current="page" @endif>{{ $page }}</a>
+                        @endfor
+
+                        @if ($windowEnd < $lastPage - 1)
+                            <span class="pagination__gap">...</span>
+                        @endif
+
+                        @if ($lastPage > 1)
+                            <a class="pagination__item {{ $currentPage === $lastPage ? 'is-active' : '' }}" href="{{ $events->url($lastPage) }}" @if ($currentPage === $lastPage) aria-current="page" @endif>{{ $lastPage }}</a>
+                        @endif
+
+                        @if ($events->hasMorePages())
+                            <a class="pagination__item" href="{{ $events->nextPageUrl() }}" aria-label="{{ __('Next page') }}">
+                                <i data-lucide="chevron-right"></i>
+                            </a>
+                        @else
+                            <span class="pagination__item is-disabled" aria-disabled="true" aria-label="{{ __('Next page') }}">
+                                <i data-lucide="chevron-right"></i>
+                            </span>
+                        @endif
+                    </nav>
+                @endif
+            </div>
+        @endif
     </section>
 </x-layouts.user>

@@ -1,0 +1,21 @@
+{
+    "name": "Billing",
+    "alias": "billing",
+    "description": "Customer billing workspace, invoices, receipts and payment reporting",
+    "version": "1.0.0",
+    "priority": 225,
+    "providers": [
+        "App\\Modules\\Billing\\Providers\\BillingServiceProvider"
+    ],
+    "requires": [
+        "shared",
+        "payment-gateways",
+        "pricing-plans",
+        "credits"
+    ],
+    "packages": {
+        "require": {},
+        "require-dev": {}
+    },
+    "active": true
+}

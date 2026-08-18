@@ -24,6 +24,8 @@
     </div>
 
     <div class="studio" x-data="enhanceStudio({
+            endpoint: @js(route('user.render-jobs.store')),
+            tool: 'background-removal',
             demo: true,
             name: 'jack-russell.jpg',
             meta: '2.2 MB · 1200 × 900',
@@ -41,7 +43,7 @@
          })">
         <section class="studio__stage" aria-label="{{ __('Preview') }}">
             <input class="sr-only" type="file" id="studio-file" name="source"
-                accept="image/jpeg,image/png,image/webp,image/avif,image/tiff" @change="onChange($event)">
+                accept="image/jpeg,image/png,image/webp,image/avif" @change="onChange($event)">
 
             <div class="studio__bar">
                 <span class="studio__file" x-show="status !== 'empty'" x-cloak>
@@ -90,14 +92,13 @@
                 <label class="dropzone studio__dropzone" for="studio-file" x-show="status === 'empty'" x-cloak>
                     <span class="dropzone__icon" aria-hidden="true"><i data-lucide="cloud-upload"></i></span>
                     <span class="dropzone__title">{{ __('Drop an image to cut out') }}</span>
-                    <span class="dropzone__text">{{ __('JPG, PNG, WEBP, AVIF, HEIC or TIFF up to 50 MB') }}</span>
+                    <span class="dropzone__text">{{ __('JPG, PNG, WEBP or AVIF up to 50 MB') }}</span>
 
                     <span class="format-list" aria-hidden="true">
                         <span class="format-pill">jpg</span>
                         <span class="format-pill">png</span>
                         <span class="format-pill">webp</span>
                         <span class="format-pill">avif</span>
-                        <span class="format-pill">tiff</span>
                     </span>
                 </label>
 
@@ -194,7 +195,7 @@
             </div>
         </section>
 
-        <form class="studio__rail" action="#" method="post" @submit.prevent="run()">
+        <form class="studio__rail" action="{{ route('user.render-jobs.store') }}" method="post" enctype="multipart/form-data" @submit.prevent="run()">
             @csrf
             <div class="studio__rail-head">
                 <span class="studio__rail-title">
@@ -283,7 +284,6 @@
                 <select class="select input-sm" id="bg-format" name="format" x-model="format">
                     <option value="png">PNG</option>
                     <option value="webp">WEBP</option>
-                    <option value="tiff">TIFF</option>
                 </select>
             </div>
 
@@ -312,48 +312,22 @@
                 {{ __('Recent cut-outs') }}
             </h2>
 
-            <a class="btn-link btn-link-sm" href="#">
+            <a class="btn-link btn-link-sm" href="{{ route('user.projects', ['tool' => 'background-removal']) }}">
                 {{ __('View all') }}
                 <i data-lucide="arrow-right"></i>
             </a>
         </div>
 
         <div class="job-grid">
-            @foreach ([
-                    ['img' => 'bgr-after.webp', 'name' => 'jack-russell.png', 'meta' => 'PNG · alpha', 'time' => __('12 min ago')],
-                    ['img' => 'feature-cutout.webp', 'name' => 'lookbook-03.png', 'meta' => 'PNG · alpha', 'time' => __('1 hr ago')],
-                    ['img' => 'thumb-4.webp', 'name' => 'chair-front.png', 'meta' => 'PNG · alpha', 'time' => __('3 hrs ago')],
-                    ['img' => 'thumb-2.webp', 'name' => 'plant-pot.webp', 'meta' => 'WEBP · alpha', 'time' => __('Yesterday')],
-                ] as $job)
-                <article class="job-card">
-                    <div class="job-card__media">
-                        <img src="{{ $sample($job['img']) }}" alt="" width="320" height="320" loading="lazy"
-                            decoding="async">
-                        <span class="badge badge-sm badge-success job-card__status">
-                            <i data-lucide="circle-check"></i>
-                            {{ __('Done') }}
-                        </span>
-                        <div class="job-card__tools">
-                            <a class="job-card__tool" href="#"
-                                aria-label="{{ __('Open :name', ['name' => $job['name']]) }}">
-                                <i data-lucide="eye"></i>
-                            </a>
-                            <button type="button" class="job-card__tool"
-                                aria-label="{{ __('Download :name', ['name' => $job['name']]) }}">
-                                <i data-lucide="download"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="job-card__body">
-                        <h3 class="job-card__name">{{ $job['name'] }}</h3>
-                        <div class="job-card__meta">
-                            <span>{{ $job['meta'] }}</span>
-                            <span class="job-card__dot" aria-hidden="true"></span>
-                            <span>{{ $job['time'] }}</span>
-                        </div>
-                    </div>
-                </article>
-            @endforeach
+            @forelse ($recentEnhancements ?? collect() as $project)
+                @include('panels.user.partials.project-card', ['project' => $project, 'statusMeta' => \App\Modules\RenderJobs\Models\RenderJob::statuses()])
+            @empty
+                <div class="empty-state">
+                    <span class="empty-state__icon" aria-hidden="true"><i data-lucide="eraser"></i></span>
+                    <h3>{{ __('No cut-outs yet') }}</h3>
+                    <p>{{ __('Upload an image above to save your first background removal.') }}</p>
+                </div>
+            @endforelse
         </div>
     </section>
 </x-layouts.user>

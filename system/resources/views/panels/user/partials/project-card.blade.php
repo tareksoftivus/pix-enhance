@@ -1,5 +1,7 @@
 @php
-    $meta = $statusMeta[$project['status']];
+    $meta = $statusMeta[$project['status']] ?? ['label' => \Illuminate\Support\Str::headline($project['status']), 'badge' => 'badge-primary', 'icon' => 'sparkles'];
+    $showUrl = $project['show_url'] ?? '#';
+    $downloadUrl = $project['download_url'] ?? null;
 @endphp
 
 <article class="job-card">
@@ -13,12 +15,14 @@
 
         @if ($project['status'] === 'completed')
             <div class="job-card__tools">
-                <a class="job-card__tool" href="#" aria-label="{{ __('Open :file', ['file' => $project['file']]) }}">
+                <a class="job-card__tool" href="{{ $showUrl }}" aria-label="{{ __('Open :file', ['file' => $project['file']]) }}">
                     <i data-lucide="eye"></i>
                 </a>
-                <button type="button" class="job-card__tool" aria-label="{{ __('Download :file', ['file' => $project['file']]) }}">
-                    <i data-lucide="download"></i>
-                </button>
+                @if ($downloadUrl)
+                    <a class="job-card__tool" href="{{ $downloadUrl }}" aria-label="{{ __('Download :file', ['file' => $project['file']]) }}">
+                        <i data-lucide="download"></i>
+                    </a>
+                @endif
             </div>
         @endif
     </div>
@@ -26,7 +30,7 @@
     <div class="job-card__body">
         <h3 class="job-card__name">{{ $project['file'] }}</h3>
 
-        @if ($project['status'] === 'processing')
+        @if (in_array($project['status'], ['processing', 'queued'], true))
             <div class="job-card__progress">
                 <div class="progress progress-sm" data-progress="{{ $project['progress'] }}">
                     <div class="progress__bar progress__bar-striped"></div>

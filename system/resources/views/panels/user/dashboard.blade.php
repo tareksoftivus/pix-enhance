@@ -1,6 +1,18 @@
 <x-layouts.user :title="__('Enhance')">
     @php
         $sample = fn (string $file) => asset("assets/frontend/enhance/img/samples/{$file}");
+        $stats = $workspace['stats'] ?? [];
+        $renderDefaults = data_get($workspace, 'preferences.render_defaults', []);
+        $dashboardFormat = in_array($renderDefaults['default_format'] ?? 'png', ['png', 'jpg', 'webp'], true)
+            ? $renderDefaults['default_format']
+            : 'png';
+        $recentEnhancements = collect($workspace['recent_enhancements'] ?? []);
+        $statusMeta = [
+            'completed' => ['label' => __('Completed'), 'badge' => 'badge-success', 'icon' => 'circle-check'],
+            'processing' => ['label' => __('Processing'), 'badge' => 'badge-primary', 'icon' => 'refresh-cw'],
+            'queued' => ['label' => __('Queued'), 'badge' => 'badge-warning', 'icon' => 'clock'],
+            'failed' => ['label' => __('Failed'), 'badge' => 'badge-danger', 'icon' => 'circle-alert'],
+        ];
     @endphp
 
     <div class="dash__head">
@@ -31,7 +43,7 @@
         <div class="dash-stat">
             <span class="dash-stat__icon" aria-hidden="true"><i data-lucide="images"></i></span>
             <span>
-                <span class="dash-stat__value">248</span>
+                <span class="dash-stat__value">{{ number_format($stats['images_enhanced'] ?? 0) }}</span>
                 <span class="dash-stat__label">{{ __('Images enhanced') }}</span>
             </span>
         </div>
@@ -39,7 +51,7 @@
         <div class="dash-stat">
             <span class="dash-stat__icon" aria-hidden="true"><i data-lucide="coins"></i></span>
             <span>
-                <span class="dash-stat__value">184</span>
+                <span class="dash-stat__value">{{ number_format($stats['credits_remaining'] ?? 0) }}</span>
                 <span class="dash-stat__label">{{ __('Credits remaining') }}</span>
             </span>
         </div>
@@ -47,7 +59,7 @@
         <div class="dash-stat">
             <span class="dash-stat__icon dash-stat__icon-accent" aria-hidden="true"><i data-lucide="timer"></i></span>
             <span>
-                <span class="dash-stat__value">2.3s</span>
+                <span class="dash-stat__value">{{ $stats['average_render'] ?? '0s' }}</span>
                 <span class="dash-stat__label">{{ __('Average render') }}</span>
             </span>
         </div>
@@ -55,17 +67,26 @@
         <div class="dash-stat">
             <span class="dash-stat__icon dash-stat__icon-accent" aria-hidden="true"><i data-lucide="database"></i></span>
             <span>
-                <span class="dash-stat__value">6.1 GB</span>
+                <span class="dash-stat__value">{{ $stats['storage_used'] ?? '0 B' }}</span>
                 <span class="dash-stat__label">{{ __('Storage used') }}</span>
             </span>
         </div>
     </div>
 
     <div class="studio" id="studio"
-         x-data="enhanceStudio({ demo: true, name: 'beach-cove.jpg', meta: '2.4 MB · 960 × 720' })">
+         x-data="enhanceStudio({
+            endpoint: @js(route('user.render-jobs.store')),
+            tool: 'upscaler',
+            model: @js($renderDefaults['default_model'] ?? 'auto'),
+            scale: @js((string) ($renderDefaults['default_scale'] ?? '4')),
+            format: @js($dashboardFormat),
+            face: @js((bool) ($renderDefaults['face_restoration'] ?? true)),
+            autoDownload: @js((bool) ($renderDefaults['auto_download'] ?? false)),
+            acceptedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
+         })">
         <section class="studio__stage" aria-label="{{ __('Preview') }}">
             <input class="sr-only" type="file" id="studio-file" name="source"
-                   accept="image/jpeg,image/png,image/webp,image/avif,image/tiff"
+                   accept="image/jpeg,image/png,image/webp,image/avif"
                    @change="onChange($event)">
 
             <div class="studio__bar">
@@ -118,16 +139,20 @@
                        x-show="status === 'empty'" x-cloak>
                     <span class="dropzone__icon" aria-hidden="true"><i data-lucide="cloud-upload"></i></span>
                     <span class="dropzone__title">{{ __('Drop an image, or browse') }}</span>
-                    <span class="dropzone__text">{{ __('JPG, PNG, WEBP, AVIF, HEIC or TIFF up to 50 MB') }}</span>
+                    <span class="dropzone__text">{{ __('JPG, PNG, WEBP or AVIF up to 50 MB') }}</span>
 
                     <span class="format-list" aria-hidden="true">
                         <span class="format-pill">jpg</span>
                         <span class="format-pill">png</span>
                         <span class="format-pill">webp</span>
                         <span class="format-pill">avif</span>
-                        <span class="format-pill">tiff</span>
                     </span>
                 </label>
+
+                <p class="field__error" x-show="error" x-cloak>
+                    <i data-lucide="circle-alert"></i>
+                    <span x-text="error"></span>
+                </p>
 
                 <div class="studio__running" x-show="status === 'running'" x-cloak>
                     <div class="studio__running-preview">
@@ -206,17 +231,19 @@
                 <div class="studio__foot-meta">
                     <span>{{ __('Output') }} <strong x-text="outputSize">3840 × 2880</strong></span>
                     <span>{{ __('Format') }} <strong x-text="format.toUpperCase()">PNG</strong></span>
-                    <span x-show="status === 'done'" x-cloak>{{ __('Rendered in') }} <strong>2.4s</strong></span>
+                    <span x-show="status === 'done' && renderedIn" x-cloak>{{ __('Rendered in') }} <strong x-text="renderedIn">0s</strong></span>
                 </div>
 
                 <div class="studio__foot-actions">
                     <button type="button" class="btn btn-outline btn-sm"
-                            :class="status !== 'done' && 'is-disabled'" :aria-disabled="status !== 'done'">
+                            :class="!canDownload && 'is-disabled'" :aria-disabled="!canDownload" :disabled="!canDownload"
+                            @click="shareResult()">
                         <i data-lucide="share-2"></i>
                         {{ __('Share') }}
                     </button>
                     <button type="button" class="btn btn-primary btn-sm"
-                            :class="status !== 'done' && 'is-disabled'" :aria-disabled="status !== 'done'"
+                            :class="!canDownload && 'is-disabled'" :aria-disabled="!canDownload" :disabled="!canDownload"
+                            @click="downloadResult()"
                             data-ripple>
                         <i data-lucide="download"></i>
                         {{ __('Download') }}
@@ -225,14 +252,14 @@
             </div>
         </section>
 
-        <form class="studio__rail" action="#" method="post" @submit.prevent="run()">
+        <form class="studio__rail" action="{{ route('user.render-jobs.store') }}" method="post" enctype="multipart/form-data" @submit.prevent="run()">
             @csrf
             <div class="studio__rail-head">
                 <span class="studio__rail-title">
                     <i data-lucide="sliders-horizontal"></i>
                     {{ __('Settings') }}
                 </span>
-                <span class="badge badge-sm badge-primary">{{ __('Auto') }}</span>
+                <span class="badge badge-sm badge-primary" x-text="model === 'auto' ? '{{ __('Auto') }}' : model">{{ __('Auto') }}</span>
             </div>
 
             <div class="control-stack">
@@ -241,10 +268,10 @@
                     {{ __('Model') }}
                 </label>
                 <select class="select" id="studio-model" name="model" x-model="model">
+                    <option value="auto">{{ __('Auto — choose for this image') }}</option>
                     <option value="enhance-xl">{{ __('Enhance-XL v3 — general purpose') }}</option>
                     <option value="photo-real">{{ __('Photo Real v2 — portraits') }}</option>
                     <option value="illustration">{{ __('Illustration v1 — art & line work') }}</option>
-                    <option value="text-sharp">{{ __('Text Sharp v1 — screenshots') }}</option>
                 </select>
             </div>
 
@@ -319,7 +346,6 @@
                     <option value="png">PNG</option>
                     <option value="jpg">JPG</option>
                     <option value="webp">WEBP</option>
-                    <option value="tiff">TIFF</option>
                 </select>
             </div>
 
@@ -333,7 +359,7 @@
 
             <button type="submit" class="btn btn-primary btn-lg btn-block studio__rail-submit"
                     :class="(status === 'empty' || busy) && 'is-disabled'"
-                    :aria-disabled="status === 'empty' || busy" data-ripple>
+                    :aria-disabled="status === 'empty' || busy" :disabled="status === 'empty' || busy" data-ripple>
                 <i data-lucide="sparkles"></i>
                 <span x-text="busy ? '{{ __('Rendering...') }}' : '{{ __('Enhance image') }}'">{{ __('Enhance image') }}</span>
             </button>
@@ -348,158 +374,21 @@
             </h2>
 
             <a class="btn-link btn-link-sm" href="{{ route('user.projects') }}">
-                {{ __('View all 248') }}
+                {{ $recentEnhancements->isNotEmpty() ? __('View all') : __('Projects') }}
                 <i data-lucide="arrow-right"></i>
             </a>
         </div>
 
         <div class="job-grid">
-            <article class="job-card">
-                <div class="job-card__media">
-                    <img src="{{ $sample('thumb-1.webp') }}" alt="{{ __('Enhanced landscape at sunrise') }}"
-                         width="320" height="320" loading="lazy" decoding="async">
-                    <span class="badge badge-sm badge-primary job-card__status">
-                        <i data-lucide="refresh-cw"></i>
-                        62%
-                    </span>
+            @forelse ($recentEnhancements as $project)
+                @include('panels.user.partials.project-card', ['project' => $project, 'statusMeta' => $statusMeta])
+            @empty
+                <div class="empty-state">
+                    <span class="empty-state__icon" aria-hidden="true"><i data-lucide="image-plus"></i></span>
+                    <h3>{{ __('No enhancements yet') }}</h3>
+                    <p>{{ __('Upload an image above to create your first saved render.') }}</p>
                 </div>
-                <div class="job-card__body">
-                    <h3 class="job-card__name">meadow-sunrise.jpg</h3>
-                    <div class="job-card__progress">
-                        <div class="progress progress-sm" data-progress="62">
-                            <div class="progress__bar progress__bar-striped"></div>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <article class="job-card">
-                <div class="job-card__media">
-                    <img src="{{ $sample('thumb-2.webp') }}" alt="{{ __('Enhanced palm grove') }}" width="320"
-                         height="320" loading="lazy" decoding="async">
-                    <span class="badge badge-sm badge-success job-card__status">
-                        <i data-lucide="circle-check"></i>
-                        8×
-                    </span>
-                    <div class="job-card__tools">
-                        <a class="job-card__tool" href="#" aria-label="{{ __('Open palm-grove.jpg') }}">
-                            <i data-lucide="eye"></i>
-                        </a>
-                        <button type="button" class="job-card__tool" aria-label="{{ __('Download palm-grove.jpg') }}">
-                            <i data-lucide="download"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="job-card__body">
-                    <h3 class="job-card__name">palm-grove.jpg</h3>
-                    <div class="job-card__meta">
-                        <span>7680 × 5760</span>
-                        <span class="job-card__dot" aria-hidden="true"></span>
-                        <span>{{ __('12 min ago') }}</span>
-                    </div>
-                </div>
-            </article>
-
-            <article class="job-card">
-                <div class="job-card__media">
-                    <img src="{{ $sample('feature-face.webp') }}" alt="{{ __('Restored portrait') }}" width="900"
-                         height="562" loading="lazy" decoding="async">
-                    <span class="badge badge-sm badge-success job-card__status">
-                        <i data-lucide="circle-check"></i>
-                        4×
-                    </span>
-                    <div class="job-card__tools">
-                        <a class="job-card__tool" href="#" aria-label="{{ __('Open studio-portrait.png') }}">
-                            <i data-lucide="eye"></i>
-                        </a>
-                        <button type="button" class="job-card__tool" aria-label="{{ __('Download studio-portrait.png') }}">
-                            <i data-lucide="download"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="job-card__body">
-                    <h3 class="job-card__name">studio-portrait.png</h3>
-                    <div class="job-card__meta">
-                        <span>{{ __('Face restore') }}</span>
-                        <span class="job-card__dot" aria-hidden="true"></span>
-                        <span>{{ __('1 hr ago') }}</span>
-                    </div>
-                </div>
-            </article>
-
-            <article class="job-card">
-                <div class="job-card__media">
-                    <img src="{{ $sample('thumb-3.webp') }}" alt="{{ __('Enhanced mountain range') }}" width="320"
-                         height="320" loading="lazy" decoding="async">
-                    <span class="badge badge-sm badge-success job-card__status">
-                        <i data-lucide="circle-check"></i>
-                        4×
-                    </span>
-                    <div class="job-card__tools">
-                        <a class="job-card__tool" href="#" aria-label="{{ __('Open alpine-ridge.jpg') }}">
-                            <i data-lucide="eye"></i>
-                        </a>
-                        <button type="button" class="job-card__tool" aria-label="{{ __('Download alpine-ridge.jpg') }}">
-                            <i data-lucide="download"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="job-card__body">
-                    <h3 class="job-card__name">alpine-ridge.jpg</h3>
-                    <div class="job-card__meta">
-                        <span>3840 × 2880</span>
-                        <span class="job-card__dot" aria-hidden="true"></span>
-                        <span>{{ __('3 hrs ago') }}</span>
-                    </div>
-                </div>
-            </article>
-
-            <article class="job-card">
-                <div class="job-card__media">
-                    <img src="{{ $sample('feature-cutout.webp') }}"
-                         alt="{{ __('Photographer cut out from the background') }}" width="900" height="562"
-                         loading="lazy" decoding="async">
-                    <span class="badge badge-sm badge-success job-card__status">
-                        <i data-lucide="circle-check"></i>
-                        PNG
-                    </span>
-                    <div class="job-card__tools">
-                        <a class="job-card__tool" href="#" aria-label="{{ __('Open lookbook-03.png') }}">
-                            <i data-lucide="eye"></i>
-                        </a>
-                        <button type="button" class="job-card__tool" aria-label="{{ __('Download lookbook-03.png') }}">
-                            <i data-lucide="download"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="job-card__body">
-                    <h3 class="job-card__name">lookbook-03.png</h3>
-                    <div class="job-card__meta">
-                        <span>{{ __('Background removed') }}</span>
-                        <span class="job-card__dot" aria-hidden="true"></span>
-                        <span>{{ __('Yesterday') }}</span>
-                    </div>
-                </div>
-            </article>
-
-            <article class="job-card">
-                <div class="job-card__media">
-                    <img src="{{ $sample('thumb-4.webp') }}" alt="{{ __('Enhanced field at golden hour') }}"
-                         width="320" height="320" loading="lazy" decoding="async">
-                    <span class="badge badge-sm badge-warning job-card__status">
-                        <i data-lucide="clock"></i>
-                        {{ __('Queued') }}
-                    </span>
-                </div>
-                <div class="job-card__body">
-                    <h3 class="job-card__name">golden-field.tif</h3>
-                    <div class="job-card__meta">
-                        <span>{{ __('Waiting for a GPU') }}</span>
-                        <span class="job-card__dot" aria-hidden="true"></span>
-                        <span>{{ __('2 in queue') }}</span>
-                    </div>
-                </div>
-            </article>
+            @endforelse
         </div>
     </section>
 </x-layouts.user>

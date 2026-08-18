@@ -25,6 +25,8 @@
 
     <div class="studio"
          x-data="enhanceStudio({
+            endpoint: @js(route('user.render-jobs.store')),
+            tool: 'upscaler',
             demo: true,
             name: 'valley-ridge.jpg',
             meta: '3.1 MB · 1024 × 768',
@@ -40,7 +42,7 @@
          })">
         <section class="studio__stage" aria-label="{{ __('Preview') }}">
             <input class="sr-only" type="file" id="studio-file" name="source"
-                   accept="image/jpeg,image/png,image/webp,image/avif,image/tiff"
+                   accept="image/jpeg,image/png,image/webp,image/avif"
                    @change="onChange($event)">
 
             <div class="studio__bar">
@@ -93,14 +95,13 @@
                        x-show="status === 'empty'" x-cloak>
                     <span class="dropzone__icon" aria-hidden="true"><i data-lucide="cloud-upload"></i></span>
                     <span class="dropzone__title">{{ __('Drop an image to upscale') }}</span>
-                    <span class="dropzone__text">{{ __('JPG, PNG, WEBP, AVIF, HEIC or TIFF up to 50 MB') }}</span>
+                    <span class="dropzone__text">{{ __('JPG, PNG, WEBP or AVIF up to 50 MB') }}</span>
 
                     <span class="format-list" aria-hidden="true">
                         <span class="format-pill">jpg</span>
                         <span class="format-pill">png</span>
                         <span class="format-pill">webp</span>
                         <span class="format-pill">avif</span>
-                        <span class="format-pill">tiff</span>
                     </span>
                 </label>
 
@@ -200,7 +201,7 @@
             </div>
         </section>
 
-        <form class="studio__rail" action="#" method="post" @submit.prevent="run()">
+        <form class="studio__rail" action="{{ route('user.render-jobs.store') }}" method="post" enctype="multipart/form-data" @submit.prevent="run()">
             @csrf
             <div class="studio__rail-head">
                 <span class="studio__rail-title">
@@ -280,7 +281,6 @@
                     <option value="png">PNG</option>
                     <option value="jpg">JPG</option>
                     <option value="webp">WEBP</option>
-                    <option value="tiff">TIFF</option>
                 </select>
             </div>
 
@@ -308,45 +308,22 @@
                 {{ __('Recent upscales') }}
             </h2>
 
-            <a class="btn-link btn-link-sm" href="#">
+            <a class="btn-link btn-link-sm" href="{{ route('user.projects', ['tool' => 'upscaler']) }}">
                 {{ __('View all') }}
                 <i data-lucide="arrow-right"></i>
             </a>
         </div>
 
         <div class="job-grid">
-            @foreach ([
-                ['img' => 'thumb-1.webp', 'name' => 'meadow-sunrise.jpg', 'meta' => '8192 × 6144', 'time' => __('12 min ago')],
-                ['img' => 'thumb-3.webp', 'name' => 'alpine-ridge.jpg', 'meta' => '3840 × 2880', 'time' => __('1 hr ago')],
-                ['img' => 'thumb-2.webp', 'name' => 'palm-grove.jpg', 'meta' => '7680 × 5760', 'time' => __('3 hrs ago')],
-                ['img' => 'thumb-4.webp', 'name' => 'golden-field.tif', 'meta' => '4096 × 3072', 'time' => __('Yesterday')],
-            ] as $job)
-                <article class="job-card">
-                    <div class="job-card__media">
-                        <img src="{{ $sample($job['img']) }}" alt="" width="320" height="320" loading="lazy" decoding="async">
-                        <span class="badge badge-sm badge-success job-card__status">
-                            <i data-lucide="circle-check"></i>
-                            {{ __('Done') }}
-                        </span>
-                        <div class="job-card__tools">
-                            <a class="job-card__tool" href="#" aria-label="{{ __('Open :name', ['name' => $job['name']]) }}">
-                                <i data-lucide="eye"></i>
-                            </a>
-                            <button type="button" class="job-card__tool" aria-label="{{ __('Download :name', ['name' => $job['name']]) }}">
-                                <i data-lucide="download"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="job-card__body">
-                        <h3 class="job-card__name">{{ $job['name'] }}</h3>
-                        <div class="job-card__meta">
-                            <span>{{ $job['meta'] }}</span>
-                            <span class="job-card__dot" aria-hidden="true"></span>
-                            <span>{{ $job['time'] }}</span>
-                        </div>
-                    </div>
-                </article>
-            @endforeach
+            @forelse ($recentEnhancements ?? collect() as $project)
+                @include('panels.user.partials.project-card', ['project' => $project, 'statusMeta' => \App\Modules\RenderJobs\Models\RenderJob::statuses()])
+            @empty
+                <div class="empty-state">
+                    <span class="empty-state__icon" aria-hidden="true"><i data-lucide="maximize-2"></i></span>
+                    <h3>{{ __('No upscales yet') }}</h3>
+                    <p>{{ __('Upload an image above to save your first upscale.') }}</p>
+                </div>
+            @endforelse
         </div>
     </section>
 </x-layouts.user>

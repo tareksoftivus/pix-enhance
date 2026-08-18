@@ -1,0 +1,21 @@
+{
+    "name": "Render Jobs",
+    "alias": "render-jobs",
+    "description": "Image render job lifecycle, uploads, output storage and user project history",
+    "version": "1.0.0",
+    "priority": 220,
+    "providers": [
+        "App\\Modules\\RenderJobs\\Providers\\RenderJobsServiceProvider"
+    ],
+    "requires": [
+        "shared",
+        "user-workspace",
+        "credits",
+        "media"
+    ],
+    "packages": {
+        "require": {},
+        "require-dev": {}
+    },
+    "active": true
+}

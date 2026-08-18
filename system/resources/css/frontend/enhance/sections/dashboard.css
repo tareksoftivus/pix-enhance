@@ -808,6 +808,14 @@
     grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
 }
 
+.job-grid > .empty-state {
+    grid-column: 1 / -1;
+}
+
+.pricing-grid > .empty-state {
+    grid-column: 1 / -1;
+}
+
 .job-card {
     display: flex;
     flex-direction: column;

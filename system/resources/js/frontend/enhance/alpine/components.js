@@ -443,8 +443,8 @@ export function otpInput(length = 6) {
  * backend produces (queued → running → done) are all reachable and styleable;
  * swap `run()` for your upload + poll and set `result.url` from the response.
  *
- * The page opens on a finished demo job so the workspace reads as a product
- * rather than an empty form. `reset()` returns it to the drop state.
+ * The dashboard starts empty and becomes usable as soon as a user supplies an
+ * image. Tool-specific pages can still pass `demo: true` for sample states.
  */
 export function enhanceStudio(options = {}) {
     return {
@@ -460,28 +460,43 @@ export function enhanceStudio(options = {}) {
             meta: options.meta || '',
             url: '',
         },
-        result: { url: '' },
+        result: {
+            url: '',
+            name: '',
+            mime: '',
+            downloadUrl: '',
+            showUrl: '',
+        },
+        selectedFile: null,
 
         /** True once the visitor has supplied their own file. */
         owned: false,
+        baseSize: options.baseSize || [960, 720],
+        startedAt: null,
+        renderedIn: '',
 
         /**
          * Settings. Each tool page binds the subset it needs — the upscaler
          * uses `scale`, face restoration uses `fidelity`, background removal
          * uses `backdrop` — and ignores the rest.
          */
-        model: options.model || 'enhance-xl',
-        scale: options.scale || '4',
-        detail: 72,
+        model: options.model || 'auto',
+        scale: String(options.scale || '4'),
+        detail: options.detail || 72,
         fidelity: 65,
         edge: 60,
         backdrop: 'transparent',
-        face: true,
-        denoise: true,
-        colour: true,
+        face: options.face ?? true,
+        denoise: options.denoise ?? true,
+        colour: options.colour ?? true,
         hair: true,
         shadow: false,
-        format: options.format || 'png',
+        format: ['png', 'jpg', 'webp'].includes(options.format) ? options.format : 'png',
+        autoDownload: options.autoDownload ?? false,
+        acceptedTypes: options.acceptedTypes || null,
+        endpoint: options.endpoint || '',
+        tool: options.tool || 'upscaler',
+        redirectOnCredits: true,
 
         /* --- Pipeline ---------------------------------------------------- */
         status: options.demo ? 'done' : 'empty',
@@ -509,13 +524,26 @@ export function enhanceStudio(options = {}) {
          */
         get cost() {
             if (options.fixedCost) return options.fixedCost;
+            if (options.costs && options.costs[this.scale]) return options.costs[this.scale];
             return { 1: 1, 2: 1, 4: 2, 8: 4, 16: 8 }[this.scale] || 1;
         },
 
         get outputSize() {
-            const [w, h] = options.baseSize || [960, 720];
+            const [w, h] = this.baseSize;
             const factor = options.noScale ? 1 : Number(this.scale);
             return `${w * factor} × ${h * factor}`;
+        },
+
+        get canDownload() {
+            return this.status === 'done' && Boolean(this.result.url || this.result.downloadUrl);
+        },
+
+        get outputMime() {
+            return {
+                png: 'image/png',
+                jpg: 'image/jpeg',
+                webp: 'image/webp',
+            }[this.format] || 'image/png';
         },
 
         get busy() {
@@ -547,11 +575,16 @@ export function enhanceStudio(options = {}) {
             event.target.value = '';
         },
 
-        accept(file) {
+        async accept(file) {
             if (!file) return;
 
             if (!file.type.startsWith('image/')) {
                 this.error = `${file.name} is not an image.`;
+                return;
+            }
+
+            if (this.acceptedTypes && !this.acceptedTypes.includes(file.type)) {
+                this.error = `${file.name} is not a supported image format.`;
                 return;
             }
 
@@ -569,14 +602,23 @@ export function enhanceStudio(options = {}) {
                 url: URL.createObjectURL(file),
             };
 
+            this.selectedFile = file;
             this.owned = true;
-            this.result = { url: '' };
+            this.result = { url: '', name: '', mime: '', downloadUrl: '', showUrl: '' };
             this.status = 'ready';
             this.progress = 0;
+
+            try {
+                const dimensions = await this.imageDimensions(this.source.url);
+                this.baseSize = dimensions;
+                this.source.meta = `${(file.size / (1024 * 1024)).toFixed(1)} MB · ${dimensions[0]} × ${dimensions[1]}`;
+            } catch {
+                this.baseSize = options.baseSize || [960, 720];
+            }
         },
 
         /* --- Pipeline ----------------------------------------------------- */
-        run() {
+        async run() {
             if (this.status === 'empty' || this.busy) return;
 
             // The demo document has no URL in state — its image lives in the
@@ -588,6 +630,13 @@ export function enhanceStudio(options = {}) {
             this.status = 'running';
             this.progress = 0;
             this.stageIndex = 0;
+            this.startedAt = performance.now();
+            this.renderedIn = '';
+
+            if (this.endpoint && this.selectedFile) {
+                await this.submitToServer();
+                return;
+            }
 
             const tick = () => {
                 this.progress = Math.min(this.progress + Math.random() * 9 + 4, 100);
@@ -607,18 +656,116 @@ export function enhanceStudio(options = {}) {
             this.timer = window.setTimeout(tick, 300);
         },
 
-        finish() {
+        async submitToServer() {
+            const form = new FormData();
+            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+            form.append('source', this.selectedFile);
+            form.append('tool', this.tool);
+            form.append('model', this.model);
+            form.append('scale', this.scale);
+            form.append('output_format', this.format);
+            form.append('detail', this.detail);
+            form.append('fidelity', this.fidelity);
+            form.append('edge', this.edge);
+            form.append('backdrop', this.backdrop);
+
+            for (const key of ['face', 'denoise', 'colour', 'hair', 'shadow']) {
+                form.append(key, this[key] ? '1' : '0');
+            }
+
+            const tick = window.setInterval(() => {
+                this.progress = Math.min(this.progress + Math.random() * 7 + 3, 92);
+                this.stageIndex = Math.min(
+                    Math.floor((this.progress / 100) * this.stages.length),
+                    this.stages.length - 1,
+                );
+            }, 260);
+
+            try {
+                const response = await fetch(this.endpoint, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN': token,
+                    },
+                    body: form,
+                });
+
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw payload;
+                }
+
+                this.applyServerJob(payload.job);
+            } catch (payload) {
+                this.error = payload?.message || 'The render could not be created. Please try again.';
+                this.status = 'ready';
+
+                if (payload?.redirect_url && this.redirectOnCredits) {
+                    this.$store.toasts.error('More credits needed', this.error);
+                } else {
+                    this.$store.toasts.error('Render failed', this.error);
+                }
+            } finally {
+                window.clearInterval(tick);
+            }
+        },
+
+        applyServerJob(job) {
+            this.progress = 100;
+            this.stageIndex = this.stages.length - 1;
+            this.source.url = job.source_url || this.source.url;
+            this.source.name = job.file_name || this.source.name;
+            if (job.source_size) this.source.meta = job.source_size;
+
+            this.result = {
+                url: job.output_url || this.source.url,
+                name: job.output_name || this.outputName(),
+                mime: this.outputMime,
+                downloadUrl: job.download_url || '',
+                showUrl: job.show_url || '',
+            };
+
+            this.renderedIn = job.rendered_in || (this.startedAt ? `${((performance.now() - this.startedAt) / 1000).toFixed(1)}s` : '');
+            this.status = job.status === 'completed' ? 'done' : 'ready';
+
+            this.$store.toasts.success(
+                job.message || 'Enhancement complete',
+                `${this.source.name} is ready${job.output_size ? ` at ${job.output_size}` : ''}.`,
+            );
+
+            if (this.autoDownload && this.canDownload) {
+                this.downloadResult();
+            }
+        },
+
+        async finish() {
             // A real integration assigns the URL the API returns here. With no
-            // backend, an uploaded image doubles as its own result so the
-            // slider still has two layers. The demo pair is left alone — its
-            // "after" image is already in the markup.
-            if (this.owned) this.result = { url: this.source.url };
+            // backend, uploaded images are rendered through canvas so the
+            // output can be downloaded as a real resized image.
+            if (this.owned) {
+                try {
+                    this.result = await this.createCanvasResult();
+                } catch {
+                    this.error = 'The browser could not export this image. Try a smaller file or a different format.';
+                    this.status = 'ready';
+                    return;
+                }
+            }
+
+            this.renderedIn = this.startedAt ? `${((performance.now() - this.startedAt) / 1000).toFixed(1)}s` : '';
             this.status = 'done';
 
             this.$store.toasts.success(
                 'Enhancement complete',
                 `${this.source.name} is ready at ${this.outputSize}.`,
             );
+
+            if (this.autoDownload && this.canDownload) {
+                this.downloadResult();
+            }
         },
 
         cancel() {
@@ -632,11 +779,103 @@ export function enhanceStudio(options = {}) {
             if (this.source.url.startsWith('blob:')) URL.revokeObjectURL(this.source.url);
 
             this.source = { name: '', meta: '', url: '' };
-            this.result = { url: '' };
+            if (this.result.url.startsWith('blob:')) URL.revokeObjectURL(this.result.url);
+            this.result = { url: '', name: '', mime: '', downloadUrl: '', showUrl: '' };
+            this.selectedFile = null;
             this.owned = false;
             this.status = 'empty';
             this.progress = 0;
             this.error = '';
+            this.renderedIn = '';
+            this.baseSize = options.baseSize || [960, 720];
+        },
+
+        imageDimensions(url) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+
+                image.onload = () => resolve([image.naturalWidth, image.naturalHeight]);
+                image.onerror = reject;
+                image.src = url;
+            });
+        },
+
+        loadImage(url) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+
+                image.onload = () => resolve(image);
+                image.onerror = reject;
+                image.src = url;
+            });
+        },
+
+        async createCanvasResult() {
+            const image = await this.loadImage(this.source.url);
+            const factor = options.noScale ? 1 : Number(this.scale);
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(image.naturalWidth * factor));
+            canvas.height = Math.max(1, Math.round(image.naturalHeight * factor));
+
+            const context = canvas.getContext('2d');
+            if (!context) throw new Error('Canvas context unavailable');
+
+            context.imageSmoothingEnabled = true;
+            context.imageSmoothingQuality = 'high';
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+            const blob = await new Promise((resolve) => {
+                canvas.toBlob(resolve, this.outputMime, this.format === 'jpg' ? 0.92 : undefined);
+            });
+
+            if (!blob) throw new Error('Canvas export failed');
+
+            if (this.result.url.startsWith('blob:')) URL.revokeObjectURL(this.result.url);
+
+            return {
+                url: URL.createObjectURL(blob),
+                name: this.outputName(),
+                mime: blob.type || this.outputMime,
+                downloadUrl: '',
+                showUrl: '',
+            };
+        },
+
+        outputName() {
+            const base = this.source.name.replace(/\.[^.]+$/, '') || 'enhanced-image';
+            return `${base}-${this.scale}x.${this.format}`;
+        },
+
+        downloadResult() {
+            if (!this.canDownload) return;
+
+            if (this.result.downloadUrl) {
+                window.location.href = this.result.downloadUrl;
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.href = this.result.url;
+            link.download = this.result.name || this.outputName();
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        },
+
+        async shareResult() {
+            if (!this.canDownload || !navigator.share) {
+                this.downloadResult();
+                return;
+            }
+
+            try {
+                await navigator.share({
+                    title: 'Enhanced image',
+                    text: `${this.source.name} exported at ${this.outputSize}.`,
+                });
+            } catch {
+                // Browser share sheets can be dismissed; no follow-up needed.
+            }
         },
     };
 }

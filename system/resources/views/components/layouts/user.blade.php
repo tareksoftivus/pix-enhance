@@ -15,6 +15,11 @@
     $billingUrl = $routeOr('user.billing', $profileUrl);
     $settingsUrl = $routeOr('user.settings', $profileUrl);
     $supportUrl = $routeOr('user.support-tickets.index', '#');
+    $credits = $creditSummary ?? null;
+    $creditBalance = (int) ($credits['balance'] ?? 0);
+    $reservedCredits = (int) ($credits['reserved'] ?? 0);
+    $availableCredits = (int) ($credits['available'] ?? 0);
+    $creditProgress = $creditBalance > 0 ? max(0, min(100, (int) round(($availableCredits / $creditBalance) * 100))) : 0;
 @endphp
 
 <!doctype html>
@@ -70,7 +75,6 @@
                             <a class="nav-item {{ request()->routeIs('user.history') ? 'is-active' : '' }}" href="{{ route('user.history') }}" @if(request()->routeIs('user.history')) aria-current="page" @endif>
                                 <i data-lucide="clock"></i>
                                 {{ __('History') }}
-                                <span class="badge badge-sm nav-item__badge">248</span>
                             </a>
                         </li>
                         <li>
@@ -135,14 +139,20 @@
                 <div class="credit-card">
                     <div class="credit-card__head">
                         <span class="credit-card__label">{{ __('Credits left') }}</span>
-                        <span class="credit-card__value">184 / 500</span>
+                        <span class="credit-card__value">{{ number_format($availableCredits) }}</span>
                     </div>
 
-                    <div class="progress progress-sm" data-progress="37">
+                    <div class="progress progress-sm" data-progress="{{ $creditProgress }}">
                         <div class="progress__bar"></div>
                     </div>
 
-                    <p class="credit-card__note">{{ __('Resets on 1 September') }} &middot; {{ __('Studio plan') }}</p>
+                    <p class="credit-card__note">
+                        @if ($reservedCredits > 0)
+                            {{ __(':count reserved for queued work', ['count' => number_format($reservedCredits)]) }}
+                        @else
+                            {{ __('Available for your next enhancement') }}
+                        @endif
+                    </p>
 
                     <a class="btn btn-primary btn-sm btn-block mt-md" href="{{ $billingUrl }}" data-ripple>
                         <i data-lucide="zap"></i>

@@ -1,0 +1,20 @@
+{
+    "name": "Credits",
+    "alias": "credits",
+    "description": "Credit wallets, ledger transactions, reservations and user top-ups",
+    "version": "1.0.0",
+    "priority": 215,
+    "providers": [
+        "App\\Modules\\Credits\\Providers\\CreditsServiceProvider"
+    ],
+    "requires": [
+        "shared",
+        "payment-gateways",
+        "pricing-plans"
+    ],
+    "packages": {
+        "require": {},
+        "require-dev": {}
+    },
+    "active": true
+}
