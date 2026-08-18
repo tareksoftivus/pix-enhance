@@ -35,11 +35,13 @@ class SupportTicketsController extends Controller implements HasMiddleware
         $filters = [
             'search' => $request->input('search'),
             'status' => $request->input('status'),
+            'priority' => $request->input('priority'),
             'sort_by' => $request->input('sort_by', 'created_at'),
             'sort_order' => $request->input('sort_order', 'desc'),
         ];
 
-        $tickets = $this->service->listForUser($request->user()->id, $filters, $request->integer('per_page') ?: null);
+        $userId = $request->user()->id;
+        $tickets = $this->service->listForUser($userId, $filters, $request->integer('per_page') ?: null);
         $table = SupportTicketsTable::forUser();
 
         if ($request->ajax()) {
@@ -53,6 +55,12 @@ class SupportTicketsController extends Controller implements HasMiddleware
         return view('support::user.index', [
             'tickets' => $tickets,
             'table' => $table,
+            'stats' => [
+                'total' => SupportTicket::query()->forUser($userId)->count(),
+                'active' => SupportTicket::query()->forUser($userId)->whereIn('status', ['open', 'pending'])->count(),
+                'resolved' => SupportTicket::query()->forUser($userId)->whereIn('status', ['resolved', 'closed'])->count(),
+                'lastActivity' => SupportTicket::query()->forUser($userId)->latest('last_reply_at')->first()?->last_reply_at,
+            ],
         ]);
     }
 

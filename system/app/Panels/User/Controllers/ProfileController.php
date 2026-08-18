@@ -10,18 +10,14 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
     public function __construct(protected SessionService $sessionService) {}
 
-    public function edit(): View
+    public function edit(): RedirectResponse
     {
-        $user = auth()->user();
-        $sessions = $this->sessionService->getActiveSessions($user->id);
-
-        return view('panels.user.profile.edit', compact('user', 'sessions'));
+        return redirect()->route('user.settings');
     }
 
     public function update(UpdateProfileRequest $request): RedirectResponse
@@ -66,6 +62,8 @@ class ProfileController extends Controller
         }
 
         if ($passwordChanged) {
+            $this->sessionService->revokeAllOtherSessions($user->id, session()->getId());
+
             Mail::to($user)->queue(new PasswordChangedMail($user, $request->ip()));
         }
 

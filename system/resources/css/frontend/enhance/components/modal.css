@@ -1,8 +1,20 @@
 /**
  * Modal / Dialog
+ *
+ * Namespaced as `.enhance-modal` (not `.modal`) because the admin panel ships
+ * its own `.modal` component (resources/css/components/modal.css +
+ * resources/js/components/modal.js) that every panel page loads too, for the
+ * global search/media-library/confirm dialogs it reuses. Both stylesheets are
+ * linked on every user-panel page, so a shared `.modal` class name here would
+ * let whichever stylesheet loads last win the cascade — which previously left
+ * every admin modal's `display` stuck at `flex` (this file's default) instead
+ * of the admin `hidden` state, leaving its full-page backdrop covering every
+ * button and link until the harmless-looking modal was toggled once. No Blade
+ * view currently renders this component; keep the `.enhance-modal` prefix if
+ * you wire it up so it can never collide with `.modal` again.
  */
 
-.modal {
+.enhance-modal {
     position: fixed;
     inset: 0;
     z-index: 120;
@@ -13,7 +25,7 @@
     overflow-y: auto;
 }
 
-.modal__scrim {
+.enhance-modal__scrim {
     position: absolute;
     inset: 0;
     background-color: rgb(9 9 11 / 0.78);
@@ -21,7 +33,7 @@
     -webkit-backdrop-filter: blur(8px);
 }
 
-.modal__dialog {
+.enhance-modal__dialog {
     position: relative;
     width: 100%;
     max-width: 32rem;
@@ -33,20 +45,20 @@
     overflow: hidden;
 }
 
-.modal__dialog-sm {
+.enhance-modal__dialog-sm {
     max-width: 24rem;
 }
 
-.modal__dialog-lg {
+.enhance-modal__dialog-lg {
     max-width: 46rem;
 }
 
-.modal__dialog-xl {
+.enhance-modal__dialog-xl {
     max-width: 64rem;
 }
 
 /* Brand glow along the top edge. */
-.modal__dialog::before {
+.enhance-modal__dialog::before {
     content: '';
     position: absolute;
     inset: 0 0 auto 0;
@@ -54,7 +66,7 @@
     background: linear-gradient(90deg, transparent, rgb(91 95 248 / 0.85), transparent);
 }
 
-.modal__header {
+.enhance-modal__header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -62,7 +74,7 @@
     padding: 1.75rem 1.75rem 0;
 }
 
-.modal__title {
+.enhance-modal__title {
     font-family: var(--font-display);
     font-size: 1.375rem;
     font-weight: 700;
@@ -70,13 +82,13 @@
     letter-spacing: -0.025em;
 }
 
-.modal__subtitle {
+.enhance-modal__subtitle {
     margin-top: 0.375rem;
     font-size: 0.875rem;
     color: var(--color-muted);
 }
 
-.modal__close {
+.enhance-modal__close {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -90,22 +102,22 @@
     transition: all var(--duration-fast) var(--ease-out-soft);
 }
 
-.modal__close:hover {
+.enhance-modal__close:hover {
     color: var(--color-title);
     border-color: var(--color-faint);
     transform: rotate(90deg);
 }
 
-.modal__close svg {
+.enhance-modal__close svg {
     width: 1.125rem;
     height: 1.125rem;
 }
 
-.modal__body {
+.enhance-modal__body {
     padding: 1.5rem 1.75rem;
 }
 
-.modal__footer {
+.enhance-modal__footer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -115,7 +127,7 @@
     background-color: rgb(9 9 11 / 0.4);
 }
 
-.modal__icon {
+.enhance-modal__icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -127,12 +139,12 @@
     color: var(--color-primary-soft);
 }
 
-.modal__icon svg {
+.enhance-modal__icon svg {
     width: 1.5rem;
     height: 1.5rem;
 }
 
-.modal__icon-danger {
+.enhance-modal__icon-danger {
     border-color: rgb(239 68 68 / 0.3);
     background-image: linear-gradient(150deg, rgb(239 68 68 / 0.24), rgb(239 68 68 / 0.06));
     color: #fca5a5;

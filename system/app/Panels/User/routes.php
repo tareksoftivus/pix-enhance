@@ -27,6 +27,13 @@ Route::withoutMiddleware(['phone.verified', 'verified', '2fa', 'panel:user'])->g
 });
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('tools/upscaler', [DashboardController::class, 'upscaler'])->name('upscaler');
+Route::get('tools/face-restoration', [DashboardController::class, 'faceRestoration'])->name('face-restoration');
+Route::get('tools/background-removal', [DashboardController::class, 'backgroundRemoval'])->name('background-removal');
+Route::get('projects', [DashboardController::class, 'projects'])->name('projects');
+Route::get('history', [DashboardController::class, 'history'])->name('history');
+Route::get('billing', [DashboardController::class, 'billing'])->name('billing');
+Route::get('settings', [DashboardController::class, 'settings'])->name('settings');
 
 // Profile
 Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');

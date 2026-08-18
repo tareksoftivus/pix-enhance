@@ -129,6 +129,30 @@
     gap: 0.625rem;
 }
 
+/* Leading icon variant — an icon badge in front of the label/hint text. */
+.setting-row__icon {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: none;
+    border-radius: 10px;
+    border: 1px solid rgb(91 95 248 / 0.26);
+    background-image: linear-gradient(150deg, rgb(91 95 248 / 0.24), rgb(124 58 237 / 0.06));
+    color: var(--color-primary-soft);
+}
+
+.setting-row__icon svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.setting-row__icon-accent {
+    border-color: rgb(34 197 94 / 0.28);
+    background-image: linear-gradient(150deg, rgb(34 197 94 / 0.22), rgb(34 197 94 / 0.05));
+    color: var(--color-accent-soft);
+}
+
 /* A control that needs the full width sits under its label instead. */
 .setting-row-stack {
     align-items: flex-start;
@@ -150,6 +174,18 @@
 @media (min-width: 640px) {
     .form-grid-2 {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 640px) {
+    .form-grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .form-grid-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
@@ -228,12 +264,36 @@
     white-space: nowrap;
 }
 
+/**
+ * The admin panel ships its own `.data-table` (resources/css/components/table.css,
+ * loaded via app.css on every page including this one) with a light theme:
+ * a solid white `tbody tr` background plus left/right borders on the end cells.
+ * Both stylesheets share the class name, so these rules pin the dark-theme
+ * values with !important to guarantee they win regardless of import order.
+ */
+.data-table tbody tr {
+    background-color: transparent !important;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+}
+
 .data-table tbody tr + tr td {
-    border-top: 1px solid var(--hairline);
+    border-top: 1px solid var(--hairline) !important;
+}
+
+.data-table tbody td {
+    background-color: var(--color-surface) !important;
+    border: 0 !important;
+}
+
+.data-table tbody td:first-child,
+.data-table tbody td:last-child {
+    border-radius: 0 !important;
 }
 
 .data-table tbody tr:hover td {
-    background-color: rgb(250 250 250 / 0.03);
+    background-color: rgb(250 250 250 / 0.03) !important;
 }
 
 .data-table td {
@@ -253,6 +313,134 @@
 
 .data-table__end {
     text-align: right;
+}
+
+/* ==========================================================================
+   Support
+   ========================================================================== */
+
+.support-thread {
+    min-width: 0;
+}
+
+.support-thread__list {
+    display: flex;
+    flex-direction: column;
+}
+
+.support-thread__sentinel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem;
+}
+
+.support-thread__loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-faint);
+}
+
+.support-thread__loading svg {
+    width: 1rem;
+    height: 1rem;
+    animation: support-spin 1s linear infinite;
+}
+
+.support-message {
+    display: flex;
+    gap: 0.875rem;
+    padding-block: 1.125rem;
+    border-bottom: 1px solid var(--hairline);
+}
+
+.support-message:first-child {
+    padding-top: 0;
+}
+
+.support-message:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.support-message__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: none;
+    border-radius: 50%;
+    border: 1px solid var(--hairline);
+    background-color: var(--color-card);
+    color: var(--color-muted);
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.support-message-staff .support-message__avatar {
+    color: #fff;
+    border-color: rgb(91 95 248 / 0.48);
+    background-image: var(--gradient-brand);
+    box-shadow: var(--shadow-glow);
+}
+
+.support-message__body {
+    min-width: 0;
+    flex: 1;
+}
+
+.support-message__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.support-message__name {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-title);
+}
+
+.support-message__time {
+    font-size: 0.75rem;
+    color: var(--color-faint);
+}
+
+.support-message__time::before {
+    content: '\2022';
+    margin-right: 0.5rem;
+    color: var(--hairline);
+}
+
+.support-message__text {
+    white-space: pre-line;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+    line-height: 1.65;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-field);
+    background-color: var(--color-card);
+    border: 1px solid var(--hairline);
+    border-top-left-radius: 0.375rem;
+}
+
+.support-message-staff .support-message__text {
+    color: var(--color-body);
+    background-color: rgb(91 95 248 / 0.1);
+    border-color: rgb(91 95 248 / 0.28);
+}
+
+@keyframes support-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ==========================================================================

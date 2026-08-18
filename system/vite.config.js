@@ -45,6 +45,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
+                'resources/css/frontend/enhance/main.css',
                 'resources/js/app.js',
                 'resources/js/frontend/enhance/main.js',
                 'resources/js/components/frontend-menu-builder.js',

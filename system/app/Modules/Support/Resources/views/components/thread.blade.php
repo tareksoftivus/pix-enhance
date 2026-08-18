@@ -10,6 +10,7 @@
     next page from :endpoint and appends it, until the server reports no more.
 --}}
 <div
+    class="support-thread"
     x-data="supportThread({
         url: @js($endpoint),
         nextPage: {{ $firstPage['next_page'] }},
@@ -17,14 +18,14 @@
     })"
     x-init="init()"
 >
-    <div x-ref="list">
+    <div class="support-thread__list" x-ref="list">
         <x-support::message-list :messages="$firstPage['messages']" />
     </div>
 
-    {{-- Sentinel / status row --}}
-    <div x-ref="sentinel" x-show="hasMore" class="flex items-center justify-center py-4">
-        <span x-show="loading" class="flex items-center gap-2 text-sm text-neutral-400">
-            <i class="ph ph-circle-notch animate-spin"></i> {{ __('Loading earlier messages…') }}
+    <div class="support-thread__sentinel" x-ref="sentinel" x-show="hasMore">
+        <span class="support-thread__loading" x-show="loading">
+            <i data-lucide="loader-circle"></i>
+            {{ __('Loading earlier messages...') }}
         </span>
     </div>
 </div>

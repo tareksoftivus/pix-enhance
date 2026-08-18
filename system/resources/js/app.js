@@ -17,6 +17,7 @@ import './components/logo-live-preview.js';
 import './components/tom-select-init.js';
 import './components/air-datepicker.js';
 import './components/charts.js';
+import './components/enhance-dashboard.js';
 
 // Alpine.js components (register before Alpine.start())
 import './components/datatable.js';

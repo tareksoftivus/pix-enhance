@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use PragmaRX\Google2FA\Google2FA;
@@ -27,7 +28,7 @@ class TwoFactorController extends Controller
         $user = $this->getUser($panel);
 
         if (! $this->is2faEnabled($panel)) {
-            return redirect()->route("{$panel['key']}.profile.edit");
+            return redirect()->route($this->profileRedirectRoute($panel));
         }
 
         $secret = $this->google2fa->generateSecretKey();
@@ -53,7 +54,7 @@ class TwoFactorController extends Controller
         $panel = $this->getPanel();
 
         if (! $this->is2faEnabled($panel)) {
-            return redirect()->route("{$panel['key']}.profile.edit");
+            return redirect()->route($this->profileRedirectRoute($panel));
         }
 
         $request->validate([
@@ -85,7 +86,7 @@ class TwoFactorController extends Controller
         session()->forget('2fa_setup_secret');
         session(['2fa_verified' => true]);
 
-        return redirect()->route("{$panel['key']}.profile.edit")
+        return redirect()->route($this->profileRedirectRoute($panel))
             ->with('success', __('Two-factor authentication has been enabled.'))
             ->with('recovery_codes', $recoveryCodes);
     }
@@ -111,7 +112,7 @@ class TwoFactorController extends Controller
 
         session()->forget('2fa_verified');
 
-        return redirect()->route("{$panel['key']}.profile.edit")
+        return redirect()->route($this->profileRedirectRoute($panel))
             ->with('success', __('Two-factor authentication has been disabled.'));
     }
 
@@ -217,6 +218,18 @@ class TwoFactorController extends Controller
     protected function getUser(array $panel): mixed
     {
         return Auth::guard($panel['guard'] ?? 'web')->user();
+    }
+
+    /**
+     * Prefer a panel settings route when profile editing has been folded into settings.
+     *
+     * @param  array{key: string, guard: string}  $panel
+     */
+    protected function profileRedirectRoute(array $panel): string
+    {
+        $settingsRoute = "{$panel['key']}.settings";
+
+        return Route::has($settingsRoute) ? $settingsRoute : "{$panel['key']}.profile.edit";
     }
 
     /**

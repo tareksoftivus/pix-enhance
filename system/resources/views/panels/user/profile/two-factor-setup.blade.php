@@ -1,51 +1,94 @@
-<x-layouts.user :title="__('Setup Two-Factor Authentication')">
-    <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <h1 class="heading-4 text-neutral-950">{{ __('Setup Two-Factor Authentication') }}</h1>
-            <a href="{{ route('user.profile.edit') }}" class="btn btn-outline">
-                <i class="ph ph-arrow-left mr-1.5"></i>
-                {{ __('Back to Profile') }}
-            </a>
+<x-layouts.user :title="__('Setup Two-Factor Authentication')" :search-placeholder="__('Search settings')">
+    <div class="dash__head">
+        <div>
+            <h1 class="dash__title">{{ __('Setup Two-Factor Authentication') }}</h1>
+            <p class="dash__subtitle">
+                {{ __('Scan the QR code, save the manual key, then enter a fresh code to protect your account.') }}
+            </p>
         </div>
 
-        <div class="section-card max-w-2xl">
-            <div class="space-y-6">
-                {{-- Step 1: Scan QR Code --}}
-                <div>
-                    <h3 class="heading-5 text-neutral-950 mb-2">{{ __('Step 1: Scan QR Code') }}</h3>
-                    <p class="text-sm text-neutral-500 mb-4">{{ __('Scan the following QR code using your authenticator app (Google Authenticator, Authy, etc.).') }}</p>
+        <div class="cluster cluster-sm">
+            <a href="{{ route('user.settings') }}" class="btn btn-outline btn-sm">
+                <i data-lucide="arrow-left"></i>
+                {{ __('Back to settings') }}
+            </a>
+        </div>
+    </div>
 
-                    <div class="flex justify-center rounded-xl border border-neutral-100 bg-neutral-50 p-6">
-                        <div class="bg-white rounded-lg p-3">
+    <section class="panel" aria-labelledby="two-factor-title">
+        <div class="panel__head">
+            <h2 class="panel__title" id="two-factor-title">
+                <i data-lucide="shield-check"></i>
+                {{ __('Authenticator app') }}
+            </h2>
+            <span class="badge badge-sm badge-primary">{{ __('Setup') }}</span>
+        </div>
+
+        <div class="panel__body">
+            <div class="form-grid form-grid-2">
+                <div class="field">
+                    <span class="field__label">{{ __('Step 1: Scan QR Code') }}</span>
+                    <p class="field__hint">
+                        {{ __('Use Google Authenticator, Authy, 1Password or another authenticator app.') }}
+                    </p>
+
+                    <div class="dropzone mt-md">
+                        <span class="dropzone__icon" aria-hidden="true">
+                            <i data-lucide="qr-code"></i>
+                        </span>
+                        <span class="dropzone__title">{{ __('Scan this code') }}</span>
+                        <span class="dropzone__text">{{ __('It links your authenticator app to this PixEnhance account.') }}</span>
+                        <span class="mt-md rounded-sm bg-white p-sm">
                             {!! $qrCodeSvg !!}
-                        </div>
+                        </span>
                     </div>
                 </div>
 
-                {{-- Manual Entry --}}
-                <div>
-                    <h3 class="heading-5 text-neutral-950 mb-2">{{ __('Or enter the key manually') }}</h3>
-                    <p class="text-sm text-neutral-500 mb-3">{{ __('If you cannot scan the QR code, enter this key into your authenticator app manually.') }}</p>
-                    <div class="flex items-center gap-2">
-                        <code class="rounded-lg bg-neutral-50 border border-neutral-100 px-4 py-2.5 font-mono text-sm text-neutral-700 tracking-wider select-all">{{ $secret }}</code>
+                <div class="field">
+                    <span class="field__label">{{ __('Manual key') }}</span>
+                    <p class="field__hint">
+                        {{ __('If you cannot scan the QR code, enter this key into your authenticator app manually.') }}
+                    </p>
+
+                    <div class="input-group mt-md">
+                        <span class="input-group__icon" aria-hidden="true"><i data-lucide="key-round"></i></span>
+                        <input class="input" type="text" value="{{ $secret }}" readonly>
                     </div>
-                </div>
 
-                {{-- Step 2: Verify --}}
-                <div class="pt-4 border-t border-neutral-100">
-                    <h3 class="heading-5 text-neutral-950 mb-2">{{ __('Step 2: Verify Code') }}</h3>
-                    <p class="text-sm text-neutral-500 mb-4">{{ __('Enter the 6-digit code from your authenticator app to confirm setup.') }}</p>
-
-                    <form method="POST" action="{{ route('user.two-factor.enable') }}" class="max-w-sm space-y-4">
+                    <form method="POST" action="{{ route('user.two-factor.enable') }}" class="mt-lg">
                         @csrf
-                        <x-forms.input :label="__('Authentication Code')" name="code" type="text" required placeholder="000000" icon="ph ph-shield-check" inputmode="numeric" autocomplete="one-time-code" autofocus />
-                        <div class="flex items-center gap-3">
-                            <x-forms.submit :label="__('Enable Two-Factor Authentication')" />
-                            <a href="{{ route('user.profile.edit') }}" class="btn btn-outline">{{ __('Cancel') }}</a>
+
+                        <div class="field">
+                            <label class="field__label" for="two-factor-code">{{ __('Step 2: Verify Code') }}</label>
+                            <div class="input-group">
+                                <span class="input-group__icon" aria-hidden="true"><i data-lucide="shield-check"></i></span>
+                                <input class="input" type="text" id="two-factor-code" name="code"
+                                       required inputmode="numeric" autocomplete="one-time-code"
+                                       placeholder="000000" autofocus>
+                            </div>
+                            @error('code')
+                                <p class="field__hint text-danger">{{ $message }}</p>
+                            @else
+                                <p class="field__hint">{{ __('Enter the 6-digit code from your authenticator app.') }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="cluster cluster-sm mt-lg">
+                            <button type="submit" class="btn btn-primary btn-sm" data-ripple>
+                                <i data-lucide="shield-check"></i>
+                                {{ __('Enable two-factor authentication') }}
+                            </button>
+                            <a href="{{ route('user.settings') }}" class="btn btn-ghost btn-sm">{{ __('Cancel') }}</a>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
+
+        <div class="panel__foot">
+            <p class="panel__note">
+                {{ __('After enabling, you will receive recovery codes. Store them somewhere safe.') }}
+            </p>
+        </div>
+    </section>
 </x-layouts.user>
