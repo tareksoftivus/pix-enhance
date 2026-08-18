@@ -162,6 +162,19 @@ class RenderJobService
         return (bool) $job->delete();
     }
 
+    /**
+     * Clears every finished render job for the user. Jobs still queued or
+     * processing are left untouched — clearing history should never cancel
+     * an in-flight render out from under someone.
+     */
+    public function clearHistoryForUser(User $user): int
+    {
+        return RenderJob::query()
+            ->forUser((int) $user->getKey())
+            ->whereIn('status', ['completed', 'failed', 'cancelled'])
+            ->delete();
+    }
+
     public function fail(RenderJob $job, string $message): RenderJob
     {
         $this->releaseReservation($job);

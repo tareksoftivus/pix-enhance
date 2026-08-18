@@ -96,6 +96,21 @@ class RenderJobsController extends Controller
         return redirect()->route('user.projects')->with('success', __('Render job deleted.'));
     }
 
+    public function clearHistory(Request $request): RedirectResponse|JsonResponse
+    {
+        $cleared = $this->renderJobs->clearHistoryForUser($request->user());
+
+        $message = $cleared > 0
+            ? __(':count render job(s) removed from history.', ['count' => $cleared])
+            : __('No finished render jobs to clear.');
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message, 'cleared' => $cleared]);
+        }
+
+        return back()->with('success', $message);
+    }
+
     protected function authorizeOwner(Request $request, RenderJob $renderJob): void
     {
         abort_unless((int) $renderJob->user_id === (int) $request->user()->id, 404);

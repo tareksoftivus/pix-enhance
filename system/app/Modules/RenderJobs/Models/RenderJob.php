@@ -4,7 +4,9 @@ namespace App\Modules\RenderJobs\Models;
 
 use App\Models\User;
 use App\Modules\Credits\Models\CreditReservation;
+use App\Modules\RenderJobs\Database\Factories\RenderJobFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,7 +15,8 @@ use Illuminate\Support\Str;
 
 class RenderJob extends Model
 {
-    use SoftDeletes;
+    /** @use HasFactory<RenderJobFactory> */
+    use HasFactory, SoftDeletes;
 
     protected $table = 'render_jobs';
 
@@ -81,6 +84,11 @@ class RenderJob extends Model
     public function getRouteKeyName(): string
     {
         return 'uuid';
+    }
+
+    protected static function newFactory(): RenderJobFactory
+    {
+        return RenderJobFactory::new();
     }
 
     /**

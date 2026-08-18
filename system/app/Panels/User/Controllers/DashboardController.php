@@ -73,7 +73,8 @@ class DashboardController extends Controller
         $user = auth()->user();
         $sessions = $this->sessionService->getActiveSessions($user->id);
         $workspacePreferences = $this->workspaceService->preferencesFor($user);
+        $renderSummary = $this->renderJobService->summaryFor($user);
 
-        return view('panels.user.profile.settings', compact('user', 'sessions', 'workspacePreferences'));
+        return view('panels.user.profile.settings', compact('user', 'sessions', 'workspacePreferences', 'renderSummary'));
     }
 }

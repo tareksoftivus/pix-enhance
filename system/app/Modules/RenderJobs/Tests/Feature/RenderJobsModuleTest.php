@@ -80,3 +80,33 @@ it('does not allow users to download another users render', function () {
         ->get(route('user.render-jobs.download', $job))
         ->assertNotFound();
 });
+
+it('clears finished render history but keeps jobs in progress', function () {
+    $user = User::factory()->create();
+
+    $completed = RenderJob::factory()->create(['user_id' => $user->id, 'status' => 'completed']);
+    $failed = RenderJob::factory()->create(['user_id' => $user->id, 'status' => 'failed']);
+    $cancelled = RenderJob::factory()->create(['user_id' => $user->id, 'status' => 'cancelled']);
+    $queued = RenderJob::factory()->create(['user_id' => $user->id, 'status' => 'queued']);
+    $othersJob = RenderJob::factory()->create(['status' => 'completed']);
+
+    $cleared = app(RenderJobService::class)->clearHistoryForUser($user);
+
+    expect($cleared)->toBe(3)
+        ->and(RenderJob::query()->whereKey([$completed->id, $failed->id, $cancelled->id])->count())->toBe(0)
+        ->and(RenderJob::query()->whereKey($queued->id)->exists())->toBeTrue()
+        ->and(RenderJob::query()->whereKey($othersJob->id)->exists())->toBeTrue();
+});
+
+it('clears render history over http for the signed in user only', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    RenderJob::factory()->create(['user_id' => $user->id, 'status' => 'completed']);
+    RenderJob::factory()->create(['user_id' => $user->id, 'status' => 'queued']);
+
+    $this->actingAs($user)
+        ->delete(route('user.render-jobs.clear-history'))
+        ->assertRedirect();
+
+    expect(RenderJob::query()->where('user_id', $user->id)->count())->toBe(1)
+        ->and(RenderJob::query()->where('user_id', $user->id)->first()->status)->toBe('queued');
+});

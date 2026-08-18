@@ -11,6 +11,26 @@
     $workspacePreferences = $workspacePreferences ?? [];
     $notificationPreferences = $workspacePreferences['notifications'] ?? [];
     $renderDefaults = $workspacePreferences['render_defaults'] ?? [];
+    $renderSummary = $renderSummary ?? [];
+    $clearableJobs = ($renderSummary['completed'] ?? 0) + ($renderSummary['failed'] ?? 0) + ($renderSummary['cancelled'] ?? 0);
+    $formatStorage = function (int $bytes): string {
+        if ($bytes < 1024) {
+            return $bytes.' B';
+        }
+
+        $units = ['KB', 'MB', 'GB', 'TB'];
+        $value = $bytes / 1024;
+
+        foreach ($units as $unit) {
+            if ($value < 1024) {
+                return number_format($value, $value >= 10 ? 0 : 1).' '.$unit;
+            }
+
+            $value /= 1024;
+        }
+
+        return number_format($value, 1).' PB';
+    };
 @endphp
 
 <x-layouts.user :title="__('Settings')" :search-placeholder="__('Search settings')">
@@ -534,12 +554,18 @@
                         <i data-lucide="database"></i>
                         {{ __('Storage') }}
                     </h2>
-                    <p class="panel__subtitle">{{ __('Storage limits will connect to plans when the Billing module is implemented.') }}</p>
+                    <p class="panel__subtitle">{{ __('Combined size of your uploaded sources and rendered outputs.') }}</p>
                 </div>
 
                 <div class="panel__body">
-                    <div class="progress" data-progress="12">
-                        <div class="progress__bar"></div>
+                    <div class="setting-row">
+                        <span class="setting-row__text">
+                            <span class="setting-row__label">{{ __('Storage used') }}</span>
+                            <span class="setting-row__hint">{{ __(':count render jobs on file.', ['count' => number_format($renderSummary['total'] ?? 0)]) }}</span>
+                        </span>
+                        <span class="setting-row__control">
+                            <strong>{{ $formatStorage((int) ($renderSummary['storage_bytes'] ?? 0)) }}</strong>
+                        </span>
                     </div>
 
                     <div class="setting-row mt-lg">
@@ -560,13 +586,22 @@
                     <div class="setting-row">
                         <span class="setting-row__text">
                             <span class="setting-row__label">{{ __('Clear render history') }}</span>
-                            <span class="setting-row__hint">{{ __('Render history cleanup will connect to stored jobs once the render module is implemented.') }}</span>
+                            <span class="setting-row__hint">
+                                {{ $clearableJobs > 0
+                                    ? __('Permanently removes :count finished, failed or cancelled render job(s) from your history. Jobs still in progress are kept.', ['count' => number_format($clearableJobs)])
+                                    : __('No finished render jobs to clear yet.') }}
+                            </span>
                         </span>
                         <span class="setting-row__control">
-                            <button type="button" class="btn btn-danger-soft btn-sm is-disabled" aria-disabled="true" disabled>
-                                <i data-lucide="trash-2"></i>
-                                {{ __('Clear history') }}
-                            </button>
+                            <form method="post" action="{{ route('user.render-jobs.clear-history') }}"
+                                  onsubmit="return confirm('{{ __('Permanently clear your finished render history? This cannot be undone.') }}');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger-soft btn-sm" @disabled($clearableJobs === 0)>
+                                    <i data-lucide="trash-2"></i>
+                                    {{ __('Clear history') }}
+                                </button>
+                            </form>
                         </span>
                     </div>
                 </div>
