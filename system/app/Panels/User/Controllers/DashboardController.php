@@ -3,6 +3,7 @@
 namespace App\Panels\User\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\AiSettings\Services\AiSettingsService;
 use App\Modules\Billing\Services\BillingService;
 use App\Modules\RenderJobs\Services\RenderJobService;
 use App\Modules\Shared\Services\SessionService;
@@ -16,35 +17,40 @@ class DashboardController extends Controller
         protected SessionService $sessionService,
         protected UserWorkspaceService $workspaceService,
         protected RenderJobService $renderJobService,
-        protected BillingService $billingService
+        protected BillingService $billingService,
+        protected AiSettingsService $aiSettingsService
     ) {}
 
     public function index(): View
     {
         $workspace = $this->workspaceService->dashboardFor(auth()->user());
+        $imageModels = $this->aiSettingsService->getEnabledImageModels();
 
-        return view('panels.user.dashboard', compact('workspace'));
+        return view('panels.user.dashboard', compact('workspace', 'imageModels'));
     }
 
     public function upscaler(): View
     {
         $recentEnhancements = $this->renderJobService->recentCardsFor(auth()->user(), 'upscaler', 4);
+        $imageModels = $this->aiSettingsService->getEnabledImageModels();
 
-        return view('panels.user.upscaler', compact('recentEnhancements'));
+        return view('panels.user.upscaler', compact('recentEnhancements', 'imageModels'));
     }
 
     public function faceRestoration(): View
     {
         $recentEnhancements = $this->renderJobService->recentCardsFor(auth()->user(), 'face-restoration', 4);
+        $imageModels = $this->aiSettingsService->getEnabledImageModels();
 
-        return view('panels.user.face-restoration', compact('recentEnhancements'));
+        return view('panels.user.face-restoration', compact('recentEnhancements', 'imageModels'));
     }
 
     public function backgroundRemoval(): View
     {
         $recentEnhancements = $this->renderJobService->recentCardsFor(auth()->user(), 'background-removal', 4);
+        $imageModels = $this->aiSettingsService->getEnabledImageModels();
 
-        return view('panels.user.background-removal', compact('recentEnhancements'));
+        return view('panels.user.background-removal', compact('recentEnhancements', 'imageModels'));
     }
 
     public function projects(Request $request): View

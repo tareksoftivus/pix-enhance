@@ -219,9 +219,10 @@
                     {{ __('Model') }}
                 </label>
                 <select class="select" id="fr-model" name="model" x-model="model">
-                    <option value="face-v3">{{ __('Face v3 — general portraits') }}</option>
-                    <option value="portrait-soft">{{ __('Portrait Soft — modern photography') }}</option>
-                    <option value="vintage">{{ __('Vintage Scan — film & prints') }}</option>
+                    <option value="auto">{{ __('Auto — choose for this image') }}</option>
+                    @foreach ($imageModels ?? [] as $option)
+                        <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                    @endforeach
                 </select>
             </div>
 

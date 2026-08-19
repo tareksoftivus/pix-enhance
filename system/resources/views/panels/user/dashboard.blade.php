@@ -269,9 +269,9 @@
                 </label>
                 <select class="select" id="studio-model" name="model" x-model="model">
                     <option value="auto">{{ __('Auto — choose for this image') }}</option>
-                    <option value="enhance-xl">{{ __('Enhance-XL v3 — general purpose') }}</option>
-                    <option value="photo-real">{{ __('Photo Real v2 — portraits') }}</option>
-                    <option value="illustration">{{ __('Illustration v1 — art & line work') }}</option>
+                    @foreach ($imageModels ?? [] as $option)
+                        <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                    @endforeach
                 </select>
             </div>
 

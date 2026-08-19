@@ -30,6 +30,7 @@
             name: 'jack-russell.jpg',
             meta: '2.2 MB · 1200 × 900',
             model: 'auto',
+            subject: 'auto',
             noScale: true,
             fixedCost: 1,
             baseSize: [1200, 900],
@@ -210,12 +211,25 @@
                     <i data-lucide="scan-search"></i>
                     {{ __('Subject') }}
                 </label>
-                <select class="select" id="bg-subject" name="subject" x-model="model">
+                <select class="select" id="bg-subject" name="subject" x-model="subject">
                     <option value="auto">{{ __('Auto detect') }}</option>
                     <option value="person">{{ __('Person') }}</option>
                     <option value="product">{{ __('Product') }}</option>
                     <option value="animal">{{ __('Animal') }}</option>
                     <option value="car">{{ __('Vehicle') }}</option>
+                </select>
+            </div>
+
+            <div class="control-stack">
+                <label class="control-row__label" for="bg-model">
+                    <i data-lucide="cpu"></i>
+                    {{ __('Model') }}
+                </label>
+                <select class="select" id="bg-model" name="model" x-model="model">
+                    <option value="auto">{{ __('Auto — choose for this image') }}</option>
+                    @foreach ($imageModels ?? [] as $option)
+                        <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                    @endforeach
                 </select>
             </div>
 

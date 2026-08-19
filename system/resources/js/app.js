@@ -1,5 +1,6 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
+import { enhanceStudio } from './frontend/enhance/alpine/components.js';
 
 // Core UI components (always loaded)
 import './components/sidebar.js';
@@ -18,6 +19,12 @@ import './components/tom-select-init.js';
 import './components/air-datepicker.js';
 import './components/charts.js';
 import './components/enhance-dashboard.js';
+
+// The real, server-wired enhance studio (uploads to render-jobs.store and
+// renders the actual RenderJob response) — registered explicitly here rather
+// than via the marketing bundle's registerComponents() so this bundle's
+// component set stays intentional.
+Alpine.data('enhanceStudio', enhanceStudio);
 
 // Alpine.js components (register before Alpine.start())
 import './components/datatable.js';

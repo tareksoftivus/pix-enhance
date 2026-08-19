@@ -19,7 +19,8 @@ class RenderJobService
 {
     public function __construct(
         protected CreditService $creditService,
-        protected LocalRenderProcessor $processor
+        protected LocalRenderProcessor $localProcessor,
+        protected AiImageRenderProcessor $aiProcessor
     ) {}
 
     /**
@@ -117,7 +118,7 @@ class RenderJobService
         ])->save();
 
         try {
-            $output = $this->processor->process($job);
+            $output = $this->resolveProcessor($job)->process($job);
 
             $job->forceFill(array_merge($output, [
                 'status' => 'completed',
@@ -366,6 +367,16 @@ class RenderJobService
         }
 
         return (int) ($definition['scale_costs'][$scale] ?? $definition['base_cost'] ?? 1);
+    }
+
+    /**
+     * Pick the processor for a job: the AI processor when the job's model
+     * refers to an enabled, image-capable provider model, otherwise the
+     * deterministic local GD processor (also the fallback for 'auto').
+     */
+    protected function resolveProcessor(RenderJob $job): LocalRenderProcessor|AiImageRenderProcessor
+    {
+        return $this->aiProcessor->canHandle($job) ? $this->aiProcessor : $this->localProcessor;
     }
 
     protected function captureReservation(RenderJob $job): void

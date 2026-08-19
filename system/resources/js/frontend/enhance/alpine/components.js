@@ -481,6 +481,7 @@ export function enhanceStudio(options = {}) {
          * uses `backdrop` — and ignores the rest.
          */
         model: options.model || 'auto',
+        subject: options.subject || 'auto',
         scale: String(options.scale || '4'),
         detail: options.detail || 72,
         fidelity: 65,

@@ -11,7 +11,8 @@
         "shared",
         "user-workspace",
         "credits",
-        "media"
+        "media",
+        "ai-settings"
     ],
     "packages": {
         "require": {},

@@ -1,10 +1,12 @@
 <?php
 
 use App\Models\User;
+use App\Modules\AiSettings\Services\AiSettingsService;
 use App\Modules\Credits\Exceptions\InsufficientCreditsException;
 use App\Modules\Credits\Models\CreditReservation;
 use App\Modules\Credits\Models\CreditTransaction;
 use App\Modules\Credits\Services\CreditService;
+use App\Modules\RenderJobs\Exceptions\AiRenderException;
 use App\Modules\RenderJobs\Models\RenderJob;
 use App\Modules\RenderJobs\Services\RenderJobService;
 use App\Modules\Shared\Support\ModuleRegistry;
@@ -12,6 +14,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Ai\Exceptions\AiException;
+use Laravel\Ai\Image;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
@@ -109,4 +113,76 @@ it('clears render history over http for the signed in user only', function () {
 
     expect(RenderJob::query()->where('user_id', $user->id)->count())->toBe(1)
         ->and(RenderJob::query()->where('user_id', $user->id)->first()->status)->toBe('queued');
+});
+
+it('routes an enabled ai model through the ai processor', function () {
+    Storage::fake('public');
+    Image::fake(); // defaults to a fake base64 image payload per attempt
+
+    $user = User::factory()->create();
+    app(CreditService::class)->grant($user, 10, 'test_grant');
+
+    $aiSettings = app(AiSettingsService::class);
+    $aiSettings->set('gemini_enabled', true);
+    $aiSettings->set('gemini_api_key', 'test-key');
+    $aiSettings->set('gemini_image_models', ['gemini-2.5-flash-image']);
+
+    $job = app(RenderJobService::class)->create($user, UploadedFile::fake()->image('portrait.png', 120, 80), [
+        'tool' => 'upscaler',
+        'scale' => 2,
+        'output_format' => 'png',
+        'model' => 'gemini:gemini-2.5-flash-image',
+    ]);
+
+    expect($job->status)->toBe('completed');
+
+    Image::assertGenerated(fn ($prompt) => $prompt->contains('Upscaler'));
+    Storage::disk('public')->assertExists($job->output_path);
+});
+
+it('falls back to the local gd processor when no ai model is selected', function () {
+    Storage::fake('public');
+    Image::fake();
+
+    $user = User::factory()->create();
+    app(CreditService::class)->grant($user, 10, 'test_grant');
+
+    $job = app(RenderJobService::class)->create($user, UploadedFile::fake()->image('portrait.png', 120, 80), [
+        'tool' => 'upscaler',
+        'scale' => 2,
+        'output_format' => 'png',
+        'model' => 'auto',
+    ]);
+
+    expect($job->status)->toBe('completed');
+
+    Image::assertNothingGenerated();
+});
+
+it('marks the job failed without leaking raw exception detail when the ai call throws', function () {
+    Storage::fake('public');
+    Image::fake(function () {
+        throw new AiException('Upstream said: sk-secret-key-12345 is invalid');
+    });
+
+    $user = User::factory()->create();
+    app(CreditService::class)->grant($user, 10, 'test_grant');
+
+    $aiSettings = app(AiSettingsService::class);
+    $aiSettings->set('gemini_enabled', true);
+    $aiSettings->set('gemini_api_key', 'test-key');
+    $aiSettings->set('gemini_image_models', ['gemini-2.5-flash-image']);
+
+    expect(fn () => app(RenderJobService::class)->create($user, UploadedFile::fake()->image('portrait.png', 120, 80), [
+        'tool' => 'upscaler',
+        'scale' => 2,
+        'output_format' => 'png',
+        'model' => 'gemini:gemini-2.5-flash-image',
+    ]))->toThrow(AiRenderException::class);
+
+    $job = RenderJob::query()->where('user_id', $user->id)->firstOrFail();
+
+    expect($job->status)->toBe('failed')
+        ->and($job->error_message)->not->toContain('sk-secret-key-12345')
+        ->and(CreditReservation::query()->where('reservable_id', $job->id)->where('status', 'released')->exists())->toBeTrue();
 });

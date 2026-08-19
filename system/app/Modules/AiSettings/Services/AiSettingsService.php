@@ -14,6 +14,14 @@ class AiSettingsService
     protected int $cacheTtl = 86400;
 
     /**
+     * Config group keys whose SDK driver implements Laravel\Ai\Contracts\Providers\ImageProvider.
+     * Add a group key here (not to $driverMap) once its provider gains real image support.
+     *
+     * @var array<int, string>
+     */
+    protected array $imageCapableDrivers = ['gemini'];
+
+    /**
      * Get a setting value: DB override → config default → fallback.
      */
     public function get(string $key, mixed $default = null): mixed
@@ -180,6 +188,65 @@ class AiSettingsService
         }
 
         return $providers;
+    }
+
+    /**
+     * List the image-editing models available from enabled, image-capable providers.
+     *
+     * Config-driven (not a live API lookup) — each provider group's
+     * `{slug}_image_models` tags setting is the source of truth. Groups not
+     * listed in $imageCapableDrivers are skipped entirely, which keeps
+     * providers like Ollama (text/embeddings only) out of this list even if
+     * the admin has enabled them for other purposes.
+     *
+     * @return array<int, array{value: string, label: string, provider: string, model: string}>
+     */
+    public function getEnabledImageModels(): array
+    {
+        $models = [];
+
+        foreach (config($this->configKey, []) as $groupKey => $group) {
+            if (! in_array($groupKey, $this->imageCapableDrivers, true)) {
+                continue;
+            }
+
+            $slug = str_replace('-', '_', $groupKey);
+
+            if (! $this->get("{$slug}_enabled", false)) {
+                continue;
+            }
+
+            $providerLabel = $group['label'] ?? ucfirst($groupKey);
+
+            foreach ((array) $this->get("{$slug}_image_models", []) as $model) {
+                if (! $model) {
+                    continue;
+                }
+
+                $models[] = [
+                    'value' => "{$groupKey}:{$model}",
+                    'label' => "{$providerLabel} — {$model}",
+                    'provider' => $groupKey,
+                    'model' => $model,
+                ];
+            }
+        }
+
+        return $models;
+    }
+
+    /**
+     * Whether the given "{provider}:{model}" value is an enabled, image-capable model.
+     */
+    public function isEnabledImageModel(string $value): bool
+    {
+        foreach ($this->getEnabledImageModels() as $model) {
+            if ($model['value'] === $value) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

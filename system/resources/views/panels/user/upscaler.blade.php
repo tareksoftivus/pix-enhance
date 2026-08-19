@@ -217,10 +217,10 @@
                     {{ __('Model') }}
                 </label>
                 <select class="select" id="up-model" name="model" x-model="model">
-                    <option value="enhance-xl">{{ __('Enhance-XL v3 — general purpose') }}</option>
-                    <option value="photo-real">{{ __('Photo Real v2 — photographs') }}</option>
-                    <option value="illustration">{{ __('Illustration v1 — art & line work') }}</option>
-                    <option value="text-sharp">{{ __('Text Sharp v1 — screenshots & UI') }}</option>
+                    <option value="auto">{{ __('Auto — choose for this image') }}</option>
+                    @foreach ($imageModels ?? [] as $option)
+                        <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                    @endforeach
                 </select>
             </div>
 
