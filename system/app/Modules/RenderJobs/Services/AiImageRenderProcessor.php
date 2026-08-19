@@ -80,6 +80,15 @@ class AiImageRenderProcessor
 
         $dimensions = @getimagesizefromstring($bytes);
 
+        Log::info('AI render succeeded', [
+            'render_job_uuid' => $job->uuid,
+            'provider' => $provider,
+            'model' => $model,
+            'images_returned' => $response->count(),
+            'output_mime' => $image->mime,
+            'output_size' => strlen($bytes),
+        ]);
+
         return [
             'output_disk' => $disk,
             'output_path' => $outputPath,

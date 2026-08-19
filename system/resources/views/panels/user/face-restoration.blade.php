@@ -189,12 +189,14 @@
 
                 <div class="studio__foot-actions">
                     <button type="button" class="btn btn-outline btn-sm"
-                            :class="status !== 'done' && 'is-disabled'" :aria-disabled="status !== 'done'">
+                            :class="!canDownload && 'is-disabled'" :aria-disabled="!canDownload" :disabled="!canDownload"
+                            @click="shareResult()">
                         <i data-lucide="share-2"></i>
                         {{ __('Share') }}
                     </button>
                     <button type="button" class="btn btn-primary btn-sm"
-                            :class="status !== 'done' && 'is-disabled'" :aria-disabled="status !== 'done'"
+                            :class="!canDownload && 'is-disabled'" :aria-disabled="!canDownload" :disabled="!canDownload"
+                            @click="downloadResult()"
                             data-ripple>
                         <i data-lucide="download"></i>
                         {{ __('Download') }}
