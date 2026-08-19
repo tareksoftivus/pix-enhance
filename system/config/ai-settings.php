@@ -57,10 +57,10 @@ return [
                 'rules' => ['nullable', 'string'],
             ],
             'gemini_image_models' => [
-                'type' => 'tags',
+                'type' => 'text',
                 'label' => 'Enabled image models',
-                'default' => ['gemini-2.5-flash-image'],
-                'hint' => 'Model IDs shown in the render model picker on the user dashboard.',
+                'default' => 'gemini-2.5-flash-image',
+                'hint' => 'Comma-separated model IDs shown in the render model picker on the user dashboard.',
             ],
         ],
     ],

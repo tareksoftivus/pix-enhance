@@ -45,7 +45,7 @@ class AiSettingsModuleTest extends TestCase
     {
         $service = app(AiSettingsService::class);
         $service->set('gemini_enabled', true);
-        $service->set('gemini_image_models', ['gemini-2.5-flash-image']);
+        $service->set('gemini_image_models', 'gemini-2.5-flash-image');
 
         $models = $service->getEnabledImageModels();
 

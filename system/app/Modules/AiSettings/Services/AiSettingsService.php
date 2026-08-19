@@ -194,10 +194,10 @@ class AiSettingsService
      * List the image-editing models available from enabled, image-capable providers.
      *
      * Config-driven (not a live API lookup) — each provider group's
-     * `{slug}_image_models` tags setting is the source of truth. Groups not
-     * listed in $imageCapableDrivers are skipped entirely, which keeps
-     * providers like Ollama (text/embeddings only) out of this list even if
-     * the admin has enabled them for other purposes.
+     * `{slug}_image_models` comma-separated text setting is the source of
+     * truth. Groups not listed in $imageCapableDrivers are skipped entirely,
+     * which keeps providers like Ollama (text/embeddings only) out of this
+     * list even if the admin has enabled them for other purposes.
      *
      * @return array<int, array{value: string, label: string, provider: string, model: string}>
      */
@@ -217,12 +217,9 @@ class AiSettingsService
             }
 
             $providerLabel = $group['label'] ?? ucfirst($groupKey);
+            $rawModels = (string) $this->get("{$slug}_image_models", '');
 
-            foreach ((array) $this->get("{$slug}_image_models", []) as $model) {
-                if (! $model) {
-                    continue;
-                }
-
+            foreach (array_filter(array_map('trim', explode(',', $rawModels))) as $model) {
                 $models[] = [
                     'value' => "{$groupKey}:{$model}",
                     'label' => "{$providerLabel} — {$model}",

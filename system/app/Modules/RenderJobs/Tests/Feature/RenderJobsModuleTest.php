@@ -125,7 +125,7 @@ it('routes an enabled ai model through the ai processor', function () {
     $aiSettings = app(AiSettingsService::class);
     $aiSettings->set('gemini_enabled', true);
     $aiSettings->set('gemini_api_key', 'test-key');
-    $aiSettings->set('gemini_image_models', ['gemini-2.5-flash-image']);
+    $aiSettings->set('gemini_image_models', 'gemini-2.5-flash-image');
 
     $job = app(RenderJobService::class)->create($user, UploadedFile::fake()->image('portrait.png', 120, 80), [
         'tool' => 'upscaler',
@@ -171,7 +171,7 @@ it('marks the job failed without leaking raw exception detail when the ai call t
     $aiSettings = app(AiSettingsService::class);
     $aiSettings->set('gemini_enabled', true);
     $aiSettings->set('gemini_api_key', 'test-key');
-    $aiSettings->set('gemini_image_models', ['gemini-2.5-flash-image']);
+    $aiSettings->set('gemini_image_models', 'gemini-2.5-flash-image');
 
     expect(fn () => app(RenderJobService::class)->create($user, UploadedFile::fake()->image('portrait.png', 120, 80), [
         'tool' => 'upscaler',
