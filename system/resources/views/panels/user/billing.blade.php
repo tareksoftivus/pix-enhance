@@ -15,9 +15,11 @@
         $creditTransactions = $billing['credit_transactions'] ?? $creditTransactions ?? null;
         $payments = $billing['payments'] ?? $payments ?? null;
         $invoices = $billing['invoices'] ?? null;
+        $orders = $billing['orders'] ?? null;
         $transactions = $creditTransactions ? collect($creditTransactions->items()) : collect();
         $paymentRows = $payments ? collect($payments->items()) : collect($payments ?? []);
         $invoiceRows = $invoices ? collect($invoices->items()) : collect();
+        $orderRows = $orders ? collect($orders->items()) : collect();
         $currentPlan = $billing['current_plan'] ?? null;
         $currentPlanName = $currentPlan['name'] ?? null;
         $formatMoney = fn (float|int $amount, string $currency = 'USD') => strtoupper($currency).' '.number_format((float) $amount, 2);
@@ -122,20 +124,18 @@
         <div class="panel__body">
             <div class="pack-grid">
                 @foreach ($creditPacks as $pack)
-                    <form method="post" action="{{ route('user.credits.packs.purchase') }}" class="pack">
-                        @csrf
-                        <input type="hidden" name="pack" value="{{ $pack['slug'] }}">
+                    <div class="pack">
                         <span class="pack__credits">{{ number_format($pack['credits']) }}</span>
                         <span class="pack__price">{{ $formatMoney($pack['price'], $pack['currency']) }}</span>
                         <span class="pack__rate">{{ $formatMoney($pack['rate'], $pack['currency']) }} / {{ __('credit') }}</span>
                         @if ($pack['badge'])
                             <span class="badge badge-sm {{ $pack['slug'] === 'enterprise' ? 'badge-success' : 'badge-primary' }} pack__tag">{{ __($pack['badge']) }}</span>
                         @endif
-                        <button type="submit" class="btn btn-primary btn-sm btn-block mt-md" data-ripple>
+                        <a href="{{ route('user.checkout', ['type' => 'pack', 'pack' => $pack['slug']]) }}" class="btn btn-primary btn-sm btn-block mt-md" data-ripple>
                             <i data-lucide="credit-card"></i>
                             {{ __('Buy pack') }}
-                        </button>
-                    </form>
+                        </a>
+                    </div>
                 @endforeach
             </div>
         </div>
@@ -178,12 +178,9 @@
                             <li class="plan__feature"><span class="plan__feature-check"><i data-lucide="check"></i></span>{{ $feature }}</li>
                         @endforeach
                     </ul>
-                    <form method="post" action="{{ route('user.credits.plans.purchase', $plan) }}">
-                        @csrf
-                        <button type="submit" class="btn {{ $plan->is_featured ? 'btn-primary' : 'btn-outline' }} btn-block plan__cta" data-ripple>
-                            {{ $plan->cta_label ?: __('Choose plan') }}
-                        </button>
-                    </form>
+                    <a href="{{ route('user.checkout', ['type' => 'plan', 'plan' => $plan->id]) }}" class="btn {{ $plan->is_featured ? 'btn-primary' : 'btn-outline' }} btn-block plan__cta" data-ripple>
+                        {{ $plan->cta_label ?: __('Choose plan') }}
+                    </a>
                 </article>
             @empty
                 <div class="empty-state">
@@ -239,6 +236,71 @@
                                         <span class="empty-state__icon" aria-hidden="true"><i data-lucide="coins"></i></span>
                                         <h3>{{ __('No credit activity yet') }}</h3>
                                         <p>{{ __('Signup credits, purchases and render spending will appear here.') }}</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel mt-xl" aria-labelledby="orders-title">
+        <div class="panel__head">
+            <h2 class="panel__title" id="orders-title">
+                <i data-lucide="shopping-cart"></i>
+                {{ __('Orders') }}
+            </h2>
+            <p class="panel__subtitle">{{ __('Every credit pack or plan checkout you have started.') }}</p>
+        </div>
+
+        <div class="panel__body panel__body-flush">
+            <div class="table-scroll">
+                <table class="data-table">
+                    <caption class="sr-only">{{ __('Orders') }}</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">{{ __('Order') }}</th>
+                            <th scope="col">{{ __('Date') }}</th>
+                            <th scope="col">{{ __('Gateway') }}</th>
+                            <th scope="col">{{ __('Total') }}</th>
+                            <th scope="col">{{ __('Status') }}</th>
+                            <th scope="col" class="data-table__num">{{ __('Invoice') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($orderRows as $order)
+                            @php $orderMeta = $order->statusMeta(); @endphp
+                            <tr>
+                                <td>
+                                    <span class="data-table__strong">{{ $order->name }}</span>
+                                    <span class="setting-row__hint">{{ number_format($order->credits) }} {{ __('credits') }} · {{ \Illuminate\Support\Str::headline($order->type) }}</span>
+                                </td>
+                                <td class="data-table__num">{{ $order->created_at?->format('M j, Y') }}</td>
+                                <td>{{ $order->gateway ? \Illuminate\Support\Str::headline($order->gateway) : __('—') }}</td>
+                                <td class="data-table__num">{{ $formatMoney($order->total, $order->currency) }}</td>
+                                <td>
+                                    <span class="badge badge-sm badge-{{ $orderMeta['variant'] }}">{{ $orderMeta['label'] }}</span>
+                                </td>
+                                <td class="data-table__num">
+                                    @if ($order->invoice)
+                                        <a class="btn btn-outline btn-sm" href="{{ route('user.billing.invoices.show', $order->invoice) }}">
+                                            <i data-lucide="receipt-text"></i>
+                                            {{ __('View') }}
+                                        </a>
+                                    @else
+                                        <span class="setting-row__hint">{{ __('Not yet available') }}</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <span class="empty-state__icon" aria-hidden="true"><i data-lucide="shopping-cart"></i></span>
+                                        <h3>{{ __('No orders yet') }}</h3>
+                                        <p>{{ __('Credit pack and plan checkouts will appear here.') }}</p>
                                     </div>
                                 </td>
                             </tr>

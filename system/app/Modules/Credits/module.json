@@ -10,6 +10,7 @@
     "requires": [
         "shared",
         "payment-gateways",
+        "payment-gateway-settings",
         "pricing-plans"
     ],
     "packages": {

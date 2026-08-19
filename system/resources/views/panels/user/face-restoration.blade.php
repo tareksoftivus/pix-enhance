@@ -27,13 +27,9 @@
          x-data="enhanceStudio({
             endpoint: @js(route('user.render-jobs.store')),
             tool: 'face-restoration',
-            demo: true,
-            name: 'family-1927.jpg',
-            meta: '1.4 MB · 512 × 590',
-            model: 'vintage',
             scale: '4',
             costs: { 1: 2, 2: 2, 4: 3 },
-            baseSize: [512, 590],
+            acceptedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
             stages: [
                 'Detecting faces',
                 'Aligning facial landmarks',
@@ -106,6 +102,11 @@
                         <span class="format-pill">avif</span>
                     </span>
                 </label>
+
+                <p class="field__error" x-show="error" x-cloak>
+                    <i data-lucide="circle-alert"></i>
+                    <span x-text="error"></span>
+                </p>
 
                 <div class="studio__running" x-show="status === 'running'" x-cloak>
                     <div class="studio__running-preview">
@@ -184,7 +185,7 @@
                 <div class="studio__foot-meta">
                     <span>{{ __('Output') }} <strong x-text="outputSize">2048 × 2360</strong></span>
                     <span>{{ __('Format') }} <strong x-text="format.toUpperCase()">PNG</strong></span>
-                    <span x-show="status === 'done'" x-cloak>{{ __('Rendered in') }} <strong>3.2s</strong></span>
+                    <span x-show="status === 'done' && renderedIn" x-cloak>{{ __('Rendered in') }} <strong x-text="renderedIn">0s</strong></span>
                 </div>
 
                 <div class="studio__foot-actions">

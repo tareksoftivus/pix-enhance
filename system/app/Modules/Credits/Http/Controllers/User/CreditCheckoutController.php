@@ -7,6 +7,8 @@ use App\Modules\Credits\Http\Requests\PurchaseCreditPackRequest;
 use App\Modules\Credits\Services\CreditCheckoutService;
 use App\Modules\PricingPlan\Models\PricingPlan;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CreditCheckoutController extends Controller
 {
@@ -16,14 +18,22 @@ class CreditCheckoutController extends Controller
 
     public function purchasePack(PurchaseCreditPackRequest $request): RedirectResponse
     {
-        $result = $this->checkout->purchasePack($request->user(), $request->validated('pack'));
+        $result = $this->checkout->purchasePack(
+            $request->user(),
+            $request->validated('pack'),
+            $request->validated('gateway')
+        );
 
         return $this->redirectForCheckout($result, __('Credit purchase started. Complete the payment to add credits.'));
     }
 
-    public function purchasePlan(PricingPlan $pricingPlan): RedirectResponse
+    public function purchasePlan(Request $request, PricingPlan $pricingPlan): RedirectResponse
     {
-        $result = $this->checkout->purchasePlan(auth()->user(), $pricingPlan);
+        $request->validate([
+            'gateway' => ['nullable', 'string', Rule::in($this->checkout->selectableGatewayNames())],
+        ]);
+
+        $result = $this->checkout->purchasePlan(auth()->user(), $pricingPlan, $request->input('gateway'));
 
         return $this->redirectForCheckout($result, __('Plan checkout started. Credits are added after payment confirmation.'));
     }
@@ -38,6 +48,12 @@ class CreditCheckoutController extends Controller
         }
 
         if (($result['status'] ?? null) === 'completed') {
+            $order = $result['order'] ?? null;
+
+            if ($order?->payment_id) {
+                return redirect()->route('user.billing')->with('success', __('Credits added to your wallet. Your invoice is ready in Billing.'));
+            }
+
             return back()->with('success', __('Credits added to your wallet.'));
         }
 

@@ -2,8 +2,10 @@
 
 namespace App\Modules\PaymentGatewaySettings\Services;
 
+use App\Modules\ManualPaymentMethods\Models\ManualPaymentMethod;
 use App\Modules\PaymentGatewaySettings\Models\PaymentGatewaySetting;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class PaymentGatewaySettingsService
 {
@@ -141,5 +143,66 @@ class PaymentGatewaySettingsService
     public function clearCache(): void
     {
         Cache::forget($this->cacheKey);
+    }
+
+    /**
+     * Calculate the admin-configured surcharge for a gateway on top of a base amount.
+     *
+     * @return array{fixed: float, percent: float, fee: float, total: float}
+     */
+    public function feeFor(string $gateway, float $amount): array
+    {
+        $fixed = (float) $this->get("{$gateway}_fixed_charge", 0);
+        $percent = (float) $this->get("{$gateway}_percent_charge", 0);
+        $fee = round($fixed + ($amount * $percent / 100), 2);
+
+        return [
+            'fixed' => $fixed,
+            'percent' => $percent,
+            'fee' => $fee,
+            'total' => round($amount + $fee, 2),
+        ];
+    }
+
+    /**
+     * Validate an amount against a gateway's admin-configured min/max limits.
+     * A limit of 0 means "no limit", matching the admin field hints.
+     */
+    public function withinLimits(string $gateway, float $amount): bool
+    {
+        $min = (float) $this->get("{$gateway}_min_amount", 0);
+        $max = (float) $this->get("{$gateway}_max_amount", 0);
+
+        if ($min > 0 && $amount < $min) {
+            return false;
+        }
+
+        return ! ($max > 0 && $amount > $max);
+    }
+
+    /**
+     * Get a gateway's display label from its config group, or a manual payment
+     * method's name, falling back to a title-cased slug.
+     */
+    public function labelFor(string $gateway): string
+    {
+        $label = config("{$this->configKey}.{$gateway}.label");
+
+        if ($label) {
+            return $label;
+        }
+
+        $manual = ManualPaymentMethod::where('slug', $gateway)->first();
+
+        return $manual?->name ?? Str::headline($gateway);
+    }
+
+    /**
+     * Get a gateway's config-declared icon class, or a manual payment method's icon, if any.
+     */
+    public function iconFor(string $gateway): ?string
+    {
+        return config("{$this->configKey}.{$gateway}.icon")
+            ?? ManualPaymentMethod::where('slug', $gateway)->value('icon');
     }
 }

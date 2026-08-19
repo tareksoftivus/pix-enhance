@@ -7,7 +7,9 @@
     "providers": [
         "App\\Modules\\PaymentGateways\\Providers\\PaymentGatewaysServiceProvider"
     ],
-    "requires": [],
+    "requires": [
+        "payment-gateway-settings"
+    ],
     "packages": {
         "require": {
             "blendbyte/paypal": "^1.0",

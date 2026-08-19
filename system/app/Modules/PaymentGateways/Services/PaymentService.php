@@ -11,6 +11,7 @@ use App\Modules\PaymentGateways\Events\RefundProcessed;
 use App\Modules\PaymentGateways\Exceptions\PaymentException;
 use App\Modules\PaymentGateways\Models\Payment;
 use App\Modules\PaymentGateways\Models\Refund;
+use App\Modules\PaymentGatewaySettings\Services\PaymentGatewaySettingsService;
 use App\Modules\Shared\Traits\HasCrudOperations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -68,6 +69,13 @@ class PaymentService
         );
 
         $gateway = $this->manager->driver($options['gateway'] ?? null);
+
+        if (! app(PaymentGatewaySettingsService::class)->withinLimits($gateway->name(), $data->amount)) {
+            throw new PaymentException(
+                message: __('This amount is outside the allowed range for :gateway.', ['gateway' => $gateway->name()]),
+                gatewayName: $gateway->name(),
+            );
+        }
 
         $payment = Payment::create([
             'uuid' => (string) Str::uuid(),

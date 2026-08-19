@@ -4,6 +4,7 @@ namespace App\Modules\Billing\Services;
 
 use App\Models\User;
 use App\Modules\Billing\Models\BillingInvoice;
+use App\Modules\Credits\Models\CreditOrder;
 use App\Modules\Credits\Services\CreditCheckoutService;
 use App\Modules\Credits\Services\CreditService;
 use App\Modules\PaymentGateways\Models\Payment;
@@ -31,6 +32,7 @@ class BillingService
         $payments = $this->paymentsFor($user, [], 8);
         $invoices = $this->invoicesFor($user, [], 8);
         $creditTransactions = $this->credits->ledgerFor($user, [], 8);
+        $orders = $this->ordersFor($user, [], 8);
 
         return [
             'summary' => $this->summaryFor($user),
@@ -38,10 +40,36 @@ class BillingService
             'credit_packs' => $this->checkout->packs(),
             'pricing_plans' => PricingPlan::query()->active()->ordered()->get(),
             'credit_transactions' => $creditTransactions,
+            'orders' => $orders,
             'payments' => $payments,
             'invoices' => $invoices,
             'current_plan' => $this->currentPlanFor($user),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    public function ordersFor(User $user, array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        $orders = CreditOrder::query()
+            ->with('payment')
+            ->forUser($user->getKey())
+            ->when(! empty($filters['status']), fn (Builder $query): Builder => $query->where('status', $filters['status']))
+            ->latest('created_at')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $invoicesByPaymentId = BillingInvoice::query()
+            ->whereIn('payment_id', $orders->pluck('payment_id')->filter())
+            ->get()
+            ->keyBy('payment_id');
+
+        $orders->getCollection()->each(function (CreditOrder $order) use ($invoicesByPaymentId): void {
+            $order->setRelation('invoice', $order->payment_id ? $invoicesByPaymentId->get($order->payment_id) : null);
+        });
+
+        return $orders;
     }
 
     /**

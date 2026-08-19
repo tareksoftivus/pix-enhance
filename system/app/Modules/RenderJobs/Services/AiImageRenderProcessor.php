@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Exceptions\AiException;
+use Laravel\Ai\Exceptions\RateLimitedException;
 use Laravel\Ai\Files\Image as AiImage;
 use Laravel\Ai\Image;
 
@@ -48,6 +49,15 @@ class AiImageRenderProcessor
             $response = Image::of($prompt)
                 ->attachments([$source])
                 ->generate($this->labFor($provider), $model);
+        } catch (RateLimitedException $exception) {
+            Log::error('AI render rate limited', [
+                'render_job_uuid' => $job->uuid,
+                'provider' => $provider,
+                'model' => $model,
+                'exception' => $exception->getMessage(),
+            ]);
+
+            throw new AiRenderException('The AI provider is temporarily rate limited (quota exceeded). Please try again later or choose a different tool.', previous: $exception);
         } catch (AiException $exception) {
             Log::error('AI render failed', [
                 'render_job_uuid' => $job->uuid,

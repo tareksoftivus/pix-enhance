@@ -27,11 +27,8 @@
          x-data="enhanceStudio({
             endpoint: @js(route('user.render-jobs.store')),
             tool: 'upscaler',
-            demo: true,
-            name: 'valley-ridge.jpg',
-            meta: '3.1 MB · 1024 × 768',
             scale: '8',
-            baseSize: [1024, 768],
+            acceptedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
             stages: [
                 'Reading the source',
                 'Removing compression artefacts',
@@ -104,6 +101,11 @@
                         <span class="format-pill">avif</span>
                     </span>
                 </label>
+
+                <p class="field__error" x-show="error" x-cloak>
+                    <i data-lucide="circle-alert"></i>
+                    <span x-text="error"></span>
+                </p>
 
                 <div class="studio__running" x-show="status === 'running'" x-cloak>
                     <div class="studio__running-preview">
@@ -182,7 +184,7 @@
                 <div class="studio__foot-meta">
                     <span>{{ __('Output') }} <strong x-text="outputSize">8192 × 6144</strong></span>
                     <span>{{ __('Format') }} <strong x-text="format.toUpperCase()">PNG</strong></span>
-                    <span x-show="status === 'done'" x-cloak>{{ __('Rendered in') }} <strong>4.1s</strong></span>
+                    <span x-show="status === 'done' && renderedIn" x-cloak>{{ __('Rendered in') }} <strong x-text="renderedIn">0s</strong></span>
                 </div>
 
                 <div class="studio__foot-actions">
@@ -210,7 +212,7 @@
                     <i data-lucide="maximize-2"></i>
                     {{ __('Upscale') }}
                 </span>
-                <span class="badge badge-sm badge-primary">{{ __('Auto') }}</span>
+                <span class="badge badge-sm badge-primary" x-text="model === 'auto' ? '{{ __('Auto') }}' : model">{{ __('Auto') }}</span>
             </div>
 
             <div class="control-stack">

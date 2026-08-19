@@ -2,6 +2,7 @@
 
 namespace App\Modules\Credits\Http\Requests;
 
+use App\Modules\Credits\Services\CreditCheckoutService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,6 +17,7 @@ class PurchaseCreditPackRequest extends FormRequest
     {
         return [
             'pack' => ['required', 'string', Rule::in(array_keys(config('credits.packs', [])))],
+            'gateway' => ['nullable', 'string', Rule::in(app(CreditCheckoutService::class)->selectableGatewayNames())],
         ];
     }
 }

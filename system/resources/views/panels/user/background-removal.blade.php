@@ -26,14 +26,10 @@
     <div class="studio" x-data="enhanceStudio({
             endpoint: @js(route('user.render-jobs.store')),
             tool: 'background-removal',
-            demo: true,
-            name: 'jack-russell.jpg',
-            meta: '2.2 MB · 1200 × 900',
-            model: 'auto',
             subject: 'auto',
             noScale: true,
             fixedCost: 1,
-            baseSize: [1200, 900],
+            acceptedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
             stages: [
                 'Detecting the subject',
                 'Tracing the boundary',
@@ -102,6 +98,11 @@
                         <span class="format-pill">avif</span>
                     </span>
                 </label>
+
+                <p class="field__error" x-show="error" x-cloak>
+                    <i data-lucide="circle-alert"></i>
+                    <span x-text="error"></span>
+                </p>
 
                 <div class="studio__running" x-show="status === 'running'" x-cloak>
                     <div class="studio__running-preview">
@@ -178,7 +179,7 @@
                 <div class="studio__foot-meta">
                     <span>{{ __('Output') }} <strong x-text="outputSize">1200 × 900</strong></span>
                     <span>{{ __('Format') }} <strong x-text="format.toUpperCase()">PNG</strong></span>
-                    <span x-show="status === 'done'" x-cloak>{{ __('Rendered in') }} <strong>1.6s</strong></span>
+                    <span x-show="status === 'done' && renderedIn" x-cloak>{{ __('Rendered in') }} <strong x-text="renderedIn">0s</strong></span>
                 </div>
 
                 <div class="studio__foot-actions">
@@ -203,7 +204,7 @@
                     <i data-lucide="eraser"></i>
                     {{ __('Cut out') }}
                 </span>
-                <span class="badge badge-sm badge-primary">{{ __('Auto') }}</span>
+                <span class="badge badge-sm badge-primary" x-text="model === 'auto' ? '{{ __('Auto') }}' : model">{{ __('Auto') }}</span>
             </div>
 
             <div class="control-stack">

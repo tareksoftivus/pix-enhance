@@ -33,6 +33,7 @@ Route::get('tools/background-removal', [DashboardController::class, 'backgroundR
 Route::get('projects', [DashboardController::class, 'projects'])->name('projects');
 Route::get('history', [DashboardController::class, 'history'])->name('history');
 Route::get('billing', [DashboardController::class, 'billing'])->name('billing');
+Route::get('checkout', [DashboardController::class, 'checkout'])->name('checkout');
 Route::get('settings', [DashboardController::class, 'settings'])->name('settings');
 
 // Profile

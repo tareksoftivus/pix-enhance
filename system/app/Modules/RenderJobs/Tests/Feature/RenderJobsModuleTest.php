@@ -115,9 +115,68 @@ it('clears render history over http for the signed in user only', function () {
         ->and(RenderJob::query()->where('user_id', $user->id)->first()->status)->toBe('queued');
 });
 
-it('routes an enabled ai model through the ai processor', function () {
+it('performs a real ai-backed enhance and lets the user download the result', function () {
     Storage::fake('public');
-    Image::fake(); // defaults to a fake base64 image payload per attempt
+
+    // A distinct 4x4 PNG standing in for what Gemini would return — different
+    // bytes from the uploaded source, so we can prove the stored output is
+    // genuinely the AI response and not just the original upload echoed back.
+    $fakeEnhancedPng = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAFElEQVQImWPkOiHHAANMDEgANwcAL9AA+C+JIBEAAAAASUVORK5CYII=');
+    Image::fake([base64_encode($fakeEnhancedPng)]);
+
+    $user = User::factory()->create();
+    app(CreditService::class)->grant($user, 10, 'test_grant');
+
+    // Enabling Gemini with a (fake, but present) API key exercises the same
+    // "provider configured and active" path a real GEMINI_API_KEY would.
+    $aiSettings = app(AiSettingsService::class);
+    $aiSettings->set('gemini_enabled', true);
+    $aiSettings->set('gemini_api_key', 'test-key');
+    $aiSettings->set('gemini_image_models', 'gemini-2.5-flash-image');
+
+    expect($aiSettings->isEnabledImageModel('gemini:gemini-2.5-flash-image'))->toBeTrue();
+
+    $job = app(RenderJobService::class)->create($user, UploadedFile::fake()->image('portrait.png', 120, 80), [
+        'tool' => 'upscaler',
+        'scale' => 2,
+        'output_format' => 'png',
+        'model' => 'gemini:gemini-2.5-flash-image',
+    ]);
+
+    // The job completed via the AI path, not the GD fallback.
+    expect($job->status)->toBe('completed')
+        ->and($job->output_disk)->toBe('public')
+        ->and($job->output_path)->not->toBeNull();
+
+    // The exact strict-rule prompt was sent to Gemini, attached with the source image.
+    Image::assertGenerated(function ($prompt) {
+        return $prompt->contains('You are an image editing engine.')
+            && $prompt->contains('Tool: Upscaler.')
+            && $prompt->contains('Output format: png.')
+            && count($prompt->attachments) === 1;
+    });
+
+    // The stored output is genuinely the AI's returned bytes, not the source upload.
+    Storage::disk('public')->assertExists($job->output_path);
+    expect(Storage::disk('public')->get($job->output_path))->toBe($fakeEnhancedPng)
+        ->and($job->output_size)->toBe(strlen($fakeEnhancedPng));
+
+    // Credits were captured, not left reserved or released.
+    expect(app(CreditService::class)->summaryFor($user)['available'])->toBe(9);
+    expect(CreditReservation::query()->where('reservable_id', $job->id)->where('status', 'captured')->exists())->toBeTrue();
+
+    // And the user can actually download the enhanced image afterwards.
+    $response = $this->actingAs($user)->get(route('user.render-jobs.download', $job));
+
+    $response->assertOk();
+    expect($response->streamedContent())->toBe($fakeEnhancedPng);
+});
+
+it('performs an ai-backed enhance for face-restoration and background-removal tools', function (string $tool) {
+    Storage::fake('public');
+
+    $fakeEnhancedPng = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAFElEQVQImWPkOiHHAANMDEgANwcAL9AA+C+JIBEAAAAASUVORK5CYII=');
+    Image::fake([base64_encode($fakeEnhancedPng)]);
 
     $user = User::factory()->create();
     app(CreditService::class)->grant($user, 10, 'test_grant');
@@ -128,17 +187,20 @@ it('routes an enabled ai model through the ai processor', function () {
     $aiSettings->set('gemini_image_models', 'gemini-2.5-flash-image');
 
     $job = app(RenderJobService::class)->create($user, UploadedFile::fake()->image('portrait.png', 120, 80), [
-        'tool' => 'upscaler',
-        'scale' => 2,
+        'tool' => $tool,
+        'scale' => 1,
         'output_format' => 'png',
         'model' => 'gemini:gemini-2.5-flash-image',
     ]);
 
     expect($job->status)->toBe('completed');
-
-    Image::assertGenerated(fn ($prompt) => $prompt->contains('Upscaler'));
     Storage::disk('public')->assertExists($job->output_path);
-});
+    expect(Storage::disk('public')->get($job->output_path))->toBe($fakeEnhancedPng);
+
+    $this->actingAs($user)
+        ->get(route('user.render-jobs.download', $job))
+        ->assertOk();
+})->with(['face-restoration', 'background-removal']);
 
 it('falls back to the local gd processor when no ai model is selected', function () {
     Storage::fake('public');
