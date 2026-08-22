@@ -7,12 +7,15 @@ use App\Modules\PaymentGateways\DataObjects\PaymentData;
 use App\Modules\PaymentGateways\DataObjects\PaymentResponse;
 use App\Modules\PaymentGateways\DataObjects\RefundResult;
 use App\Modules\PaymentGateways\DataObjects\WebhookResult;
+use App\Modules\PaymentGateways\Drivers\Concerns\BuildsGatewayReturnUrls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 class FlutterwavePaymentGateway implements PaymentGatewayInterface
 {
+    use BuildsGatewayReturnUrls;
+
     protected string $baseUrl = 'https://api.flutterwave.com';
 
     public function name(): string
@@ -50,7 +53,7 @@ class FlutterwavePaymentGateway implements PaymentGatewayInterface
                     'tx_ref' => $txRef,
                     'amount' => $data->amount,
                     'currency' => strtoupper($data->currency),
-                    'redirect_url' => $data->returnUrl,
+                    'redirect_url' => $this->returnUrlWithReference($data->returnUrl, $txRef),
                     'customer' => array_filter([
                         'email' => $data->metadata['email'] ?? null,
                         'name' => $data->metadata['customer_name'] ?? null,

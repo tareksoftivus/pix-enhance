@@ -7,6 +7,7 @@ use App\Modules\PaymentGateways\DataObjects\PaymentData;
 use App\Modules\PaymentGateways\DataObjects\PaymentResponse;
 use App\Modules\PaymentGateways\DataObjects\RefundResult;
 use App\Modules\PaymentGateways\DataObjects\WebhookResult;
+use App\Modules\PaymentGateways\Drivers\Concerns\BuildsGatewayReturnUrls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -19,6 +20,8 @@ use RuntimeException;
  */
 class XenditPaymentGateway implements PaymentGatewayInterface
 {
+    use BuildsGatewayReturnUrls;
+
     protected string $baseUrl = 'https://api.xendit.co';
 
     public function name(): string
@@ -57,7 +60,7 @@ class XenditPaymentGateway implements PaymentGatewayInterface
                     'currency' => strtoupper($data->currency),
                     'description' => $data->description ?: 'Payment',
                     'payer_email' => $data->metadata['email'] ?? null,
-                    'success_redirect_url' => $data->returnUrl,
+                    'success_redirect_url' => $this->returnUrlWithReference($data->returnUrl, $reference),
                     'failure_redirect_url' => $data->cancelUrl,
                 ]));
 
@@ -73,8 +76,9 @@ class XenditPaymentGateway implements PaymentGatewayInterface
                 return PaymentResponse::failed('Xendit invoice_url not found in response.');
             }
 
-            return PaymentResponse::redirect($result['id'], $invoiceUrl, [
+            return PaymentResponse::redirect($reference, $invoiceUrl, [
                 'reference' => $reference,
+                'xendit_id' => $result['id'],
             ]);
         } catch (\Exception $e) {
             return PaymentResponse::failed($e->getMessage());
@@ -91,6 +95,12 @@ class XenditPaymentGateway implements PaymentGatewayInterface
 
         if (empty($invoiceId)) {
             return PaymentResponse::failed('Missing Xendit invoice id for verification.');
+        }
+
+        if (str_starts_with((string) $invoiceId, 'xnd_')) {
+            return PaymentResponse::pending((string) $invoiceId, [
+                'note' => 'Xendit return does not include the invoice id; waiting for webhook confirmation.',
+            ]);
         }
 
         try {

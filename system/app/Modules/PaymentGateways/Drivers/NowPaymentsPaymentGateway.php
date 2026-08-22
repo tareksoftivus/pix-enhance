@@ -7,6 +7,7 @@ use App\Modules\PaymentGateways\DataObjects\PaymentData;
 use App\Modules\PaymentGateways\DataObjects\PaymentResponse;
 use App\Modules\PaymentGateways\DataObjects\RefundResult;
 use App\Modules\PaymentGateways\DataObjects\WebhookResult;
+use App\Modules\PaymentGateways\Drivers\Concerns\BuildsGatewayReturnUrls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -20,6 +21,8 @@ use RuntimeException;
  */
 class NowPaymentsPaymentGateway implements PaymentGatewayInterface
 {
+    use BuildsGatewayReturnUrls;
+
     protected string $baseUrl = 'https://api.nowpayments.io/v1';
 
     public function name(): string
@@ -58,7 +61,7 @@ class NowPaymentsPaymentGateway implements PaymentGatewayInterface
                     'order_id' => $reference,
                     'order_description' => $data->description ?: 'Payment',
                     'ipn_callback_url' => route('webhooks.payments', ['gateway' => 'nowpayments']),
-                    'success_url' => $data->returnUrl,
+                    'success_url' => $this->returnUrlWithReference($data->returnUrl, $reference),
                     'cancel_url' => $data->cancelUrl,
                 ]));
 
@@ -74,8 +77,9 @@ class NowPaymentsPaymentGateway implements PaymentGatewayInterface
                 return PaymentResponse::failed('NOWPayments invoice_url not found in response.');
             }
 
-            return PaymentResponse::redirect((string) $result['id'], $invoiceUrl, [
+            return PaymentResponse::redirect($reference, $invoiceUrl, [
                 'reference' => $reference,
+                'nowpayments_invoice_id' => (string) $result['id'],
             ]);
         } catch (\Exception $e) {
             return PaymentResponse::failed($e->getMessage());
@@ -92,6 +96,12 @@ class NowPaymentsPaymentGateway implements PaymentGatewayInterface
 
         if (empty($paymentId)) {
             return PaymentResponse::failed('Missing NOWPayments payment id for verification.');
+        }
+
+        if (str_starts_with((string) $paymentId, 'now_')) {
+            return PaymentResponse::pending((string) $paymentId, [
+                'note' => 'NOWPayments return does not include the payment id; waiting for IPN confirmation.',
+            ]);
         }
 
         try {

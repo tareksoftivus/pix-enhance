@@ -79,12 +79,16 @@
                 'markAllReadUrl' => route($currentPanelKey . '.system-notifications.mark-all-read'),
                 'viewAllUrl' => route($currentPanelKey . '.system-notifications.index'),
                 'initialUnreadCount' => $unreadNotificationCount,
+                'labels' => [
+                    'notifications' => __('Notifications'),
+                    'notificationsUnread' => __('Notifications, unread items'),
+                ],
             ];
         @endphp
         <div class="relative" x-data="notificationBell({{ Js::from($bellConfig) }})">
             <button @click="togglePanel()"
                     class="relative rounded-lg p-2.5 text-neutral-500 transition-colors hover:bg-neutral-50"
-                    x-bind:aria-label='unreadCount > 0 ? {{ Js::from(__('Notifications, unread items')) }} : {{ Js::from(__('Notifications')) }}'>
+                    x-bind:aria-label="notificationAriaLabel()">
                 <i class="ph ph-bell text-xl"></i>
                 <span x-show="unreadCount > 0"
                       @if ($unreadNotificationCount === 0) x-cloak @endif

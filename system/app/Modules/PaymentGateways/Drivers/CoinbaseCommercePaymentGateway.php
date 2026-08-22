@@ -7,6 +7,7 @@ use App\Modules\PaymentGateways\DataObjects\PaymentData;
 use App\Modules\PaymentGateways\DataObjects\PaymentResponse;
 use App\Modules\PaymentGateways\DataObjects\RefundResult;
 use App\Modules\PaymentGateways\DataObjects\WebhookResult;
+use App\Modules\PaymentGateways\Drivers\Concerns\BuildsGatewayReturnUrls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -19,6 +20,8 @@ use RuntimeException;
  */
 class CoinbaseCommercePaymentGateway implements PaymentGatewayInterface
 {
+    use BuildsGatewayReturnUrls;
+
     protected string $baseUrl = 'https://api.commerce.coinbase.com';
 
     protected string $apiVersion = '2018-03-22';
@@ -69,7 +72,7 @@ class CoinbaseCommercePaymentGateway implements PaymentGatewayInterface
                         'user_id' => $data->userId,
                         'user_type' => $data->userType,
                     ]),
-                    'redirect_url' => $data->returnUrl,
+                    'redirect_url' => $this->returnUrlWithReference($data->returnUrl, $reference),
                     'cancel_url' => $data->cancelUrl,
                 ]);
 
@@ -86,8 +89,9 @@ class CoinbaseCommercePaymentGateway implements PaymentGatewayInterface
                 return PaymentResponse::failed('Coinbase Commerce hosted_url not found in response.');
             }
 
-            return PaymentResponse::redirect($charge['id'], $hostedUrl, [
+            return PaymentResponse::redirect($reference, $hostedUrl, [
                 'reference' => $reference,
+                'coinbase_id' => $charge['id'],
                 'code' => $charge['code'] ?? null,
             ]);
         } catch (\Exception $e) {
@@ -105,6 +109,12 @@ class CoinbaseCommercePaymentGateway implements PaymentGatewayInterface
 
         if (empty($chargeId)) {
             return PaymentResponse::failed('Missing Coinbase Commerce charge id for verification.');
+        }
+
+        if (str_starts_with((string) $chargeId, 'cbc_')) {
+            return PaymentResponse::pending((string) $chargeId, [
+                'note' => 'Coinbase Commerce return does not include the charge id; waiting for webhook confirmation.',
+            ]);
         }
 
         try {

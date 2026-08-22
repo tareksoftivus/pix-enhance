@@ -7,12 +7,15 @@ use App\Modules\PaymentGateways\DataObjects\PaymentData;
 use App\Modules\PaymentGateways\DataObjects\PaymentResponse;
 use App\Modules\PaymentGateways\DataObjects\RefundResult;
 use App\Modules\PaymentGateways\DataObjects\WebhookResult;
+use App\Modules\PaymentGateways\Drivers\Concerns\BuildsGatewayReturnUrls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 class PaystackPaymentGateway implements PaymentGatewayInterface
 {
+    use BuildsGatewayReturnUrls;
+
     protected string $baseUrl = 'https://api.paystack.co';
 
     public function name(): string
@@ -51,7 +54,7 @@ class PaystackPaymentGateway implements PaymentGatewayInterface
                     'amount' => (int) round($data->amount * 100),
                     'currency' => strtoupper($data->currency),
                     'reference' => $reference,
-                    'callback_url' => $data->returnUrl,
+                    'callback_url' => $this->returnUrlWithReference($data->returnUrl, $reference),
                     'metadata' => array_filter([
                         'user_id' => $data->userId,
                         'user_type' => $data->userType,

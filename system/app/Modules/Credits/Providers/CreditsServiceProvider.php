@@ -5,8 +5,11 @@ namespace App\Modules\Credits\Providers;
 use App\Modules\Credits\Listeners\GrantCreditsForSuccessfulPayment;
 use App\Modules\Credits\Listeners\GrantSignupCredits;
 use App\Modules\Credits\Listeners\RevokeCreditsForRefund;
+use App\Modules\Credits\Listeners\SyncCreditOrderForPaymentStatus;
 use App\Modules\Credits\Services\CreditCheckoutService;
 use App\Modules\Credits\Services\CreditService;
+use App\Modules\PaymentGateways\Events\PaymentCreated;
+use App\Modules\PaymentGateways\Events\PaymentFailed;
 use App\Modules\PaymentGateways\Events\PaymentSucceeded;
 use App\Modules\PaymentGateways\Events\RefundProcessed;
 use App\Modules\Shared\Support\BasePanelModuleProvider;
@@ -26,6 +29,9 @@ class CreditsServiceProvider extends BasePanelModuleProvider
     protected function bootModule(array $module): void
     {
         Event::listen(Registered::class, GrantSignupCredits::class);
+        Event::listen(PaymentCreated::class, SyncCreditOrderForPaymentStatus::class);
+        Event::listen(PaymentFailed::class, SyncCreditOrderForPaymentStatus::class);
+        Event::listen(PaymentSucceeded::class, SyncCreditOrderForPaymentStatus::class);
         Event::listen(PaymentSucceeded::class, GrantCreditsForSuccessfulPayment::class);
         Event::listen(RefundProcessed::class, RevokeCreditsForRefund::class);
 

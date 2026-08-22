@@ -9,6 +9,7 @@ use App\Modules\PaymentGateways\DataObjects\RefundResult;
 use App\Modules\PaymentGateways\DataObjects\WebhookResult;
 use Illuminate\Http\Request;
 use RuntimeException;
+use Stripe\Checkout\Session as StripeCheckoutSession;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\PaymentIntent;
@@ -51,29 +52,36 @@ class StripePaymentGateway implements PaymentGatewayInterface
 
         try {
             $secretKey = payment_gateway_setting('stripe_secret_key', '');
-            $publishableKey = payment_gateway_setting('stripe_publishable_key', '');
-
             Stripe::setApiKey($secretKey);
 
-            $params = [
-                'amount' => (int) round($data->amount * 100),
-                'currency' => strtolower($data->currency),
-                'metadata' => array_merge($data->metadata, array_filter([
-                    'user_id' => $data->userId,
-                    'user_type' => $data->userType,
-                    'description' => $data->description,
-                ])),
-            ];
+            $metadata = $this->metadataFor($data);
+            $session = StripeCheckoutSession::create([
+                'mode' => 'payment',
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => strtolower($data->currency),
+                        'product_data' => [
+                            'name' => $data->description ?: 'Payment',
+                        ],
+                        'unit_amount' => (int) round($data->amount * 100),
+                    ],
+                    'quantity' => 1,
+                ]],
+                'metadata' => $metadata,
+                'payment_intent_data' => [
+                    'metadata' => $metadata,
+                ],
+                'success_url' => $this->successUrl($data),
+                'cancel_url' => $data->cancelUrl ?: route('payments.cancel', ['gateway' => $this->name()]),
+            ]);
 
-            if ($data->paymentMethod) {
-                $params['payment_method'] = $data->paymentMethod;
+            if (empty($session->url)) {
+                return PaymentResponse::failed('Stripe checkout URL was not returned.');
             }
 
-            $intent = PaymentIntent::create($params);
-
-            return PaymentResponse::clientAction($intent->id, [
-                'client_secret' => $intent->client_secret,
-                'publishable_key' => $publishableKey,
+            return PaymentResponse::redirect($session->id, $session->url, [
+                'stripe_session_id' => $session->id,
+                'stripe_payment_intent_id' => is_string($session->payment_intent ?? null) ? $session->payment_intent : null,
             ]);
         } catch (ApiErrorException $e) {
             return PaymentResponse::failed($e->getMessage());
@@ -90,10 +98,37 @@ class StripePaymentGateway implements PaymentGatewayInterface
 
             Stripe::setApiKey($secretKey);
 
+            $sessionId = $request->get('session_id');
+
+            if (! empty($sessionId)) {
+                $session = StripeCheckoutSession::retrieve([
+                    'id' => $sessionId,
+                    'expand' => ['payment_intent'],
+                ]);
+
+                $paymentIntent = $session->payment_intent ?? null;
+                $paymentIntentId = is_string($paymentIntent) ? $paymentIntent : ($paymentIntent->id ?? null);
+
+                return match ($session->payment_status) {
+                    'paid' => PaymentResponse::completed($session->id, [
+                        'stripe_session_id' => $session->id,
+                        'stripe_payment_intent_id' => $paymentIntentId,
+                        'amount' => ($session->amount_total ?? 0) / 100,
+                        'currency' => $session->currency,
+                    ]),
+                    'unpaid', 'no_payment_required' => PaymentResponse::pending($session->id, [
+                        'stripe_session_id' => $session->id,
+                        'stripe_payment_intent_id' => $paymentIntentId,
+                        'payment_status' => $session->payment_status,
+                    ]),
+                    default => PaymentResponse::failed("Unexpected Stripe checkout status: {$session->payment_status}"),
+                };
+            }
+
             $paymentIntentId = $request->get('payment_intent');
 
             if (empty($paymentIntentId)) {
-                return PaymentResponse::failed('Missing payment_intent parameter.');
+                return PaymentResponse::failed('Missing Stripe payment identifier.');
             }
 
             $intent = PaymentIntent::retrieve($paymentIntentId);
@@ -124,6 +159,15 @@ class StripePaymentGateway implements PaymentGatewayInterface
             $secretKey = payment_gateway_setting('stripe_secret_key', '');
 
             Stripe::setApiKey($secretKey);
+
+            if (str_starts_with($gatewayPaymentId, 'cs_')) {
+                $session = StripeCheckoutSession::retrieve($gatewayPaymentId);
+                $gatewayPaymentId = (string) ($session->payment_intent ?? '');
+            }
+
+            if (empty($gatewayPaymentId)) {
+                return RefundResult::failed('Stripe payment intent was not found for this payment.');
+            }
 
             $params = [
                 'payment_intent' => $gatewayPaymentId,
@@ -185,6 +229,9 @@ class StripePaymentGateway implements PaymentGatewayInterface
         $gatewayPaymentId = $object['id'] ?? null;
 
         $status = match ($eventType) {
+            'checkout.session.completed' => 'completed',
+            'checkout.session.async_payment_failed' => 'failed',
+            'checkout.session.expired' => 'canceled',
             'payment_intent.succeeded' => 'completed',
             'payment_intent.payment_failed' => 'failed',
             'payment_intent.canceled' => 'canceled',
@@ -196,7 +243,10 @@ class StripePaymentGateway implements PaymentGatewayInterface
             gatewayPaymentId: $gatewayPaymentId,
             status: $status,
             eventType: $eventType,
-            metadata: $object,
+            metadata: array_merge($object, array_filter([
+                'stripe_session_id' => str_starts_with((string) $gatewayPaymentId, 'cs_') ? $gatewayPaymentId : null,
+                'stripe_payment_intent_id' => $object['payment_intent'] ?? null,
+            ])),
         );
     }
 
@@ -205,5 +255,30 @@ class StripePaymentGateway implements PaymentGatewayInterface
         return [
             'publishable_key' => payment_gateway_setting('stripe_publishable_key', ''),
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function metadataFor(PaymentData $data): array
+    {
+        $metadata = array_merge($data->metadata, array_filter([
+            'user_id' => $data->userId,
+            'user_type' => $data->userType,
+            'description' => $data->description,
+        ], fn ($value): bool => $value !== null && $value !== ''));
+
+        return collect($metadata)
+            ->filter(fn ($value): bool => is_scalar($value) && $value !== null && $value !== '')
+            ->map(fn ($value): string => is_bool($value) ? ($value ? 'true' : 'false') : (string) $value)
+            ->all();
+    }
+
+    protected function successUrl(PaymentData $data): string
+    {
+        $url = $data->returnUrl ?: route('payments.return', ['gateway' => $this->name()]);
+        $separator = str_contains($url, '?') ? '&' : '?';
+
+        return $url.$separator.'session_id={CHECKOUT_SESSION_ID}';
     }
 }

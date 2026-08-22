@@ -35,7 +35,12 @@ class ProcessWebhook implements ShouldQueue
 
         // Update payment status if the webhook references a payment
         if ($result->gatewayPaymentId && $result->status) {
-            $payment = Payment::where('gateway_payment_id', $result->gatewayPaymentId)->first();
+            $payment = Payment::query()
+                ->where('gateway', $this->webhookLog->gateway)
+                ->where('gateway_payment_id', $result->gatewayPaymentId)
+                ->first();
+
+            $payment ??= $this->findPaymentFromMetadata($result->metadata);
 
             if ($payment) {
                 $oldStatus = $payment->status;
@@ -47,7 +52,7 @@ class ProcessWebhook implements ShouldQueue
 
                 if ($result->status === 'completed' && $oldStatus !== 'completed') {
                     event(new PaymentSucceeded($payment));
-                } elseif ($result->status === 'failed') {
+                } elseif (in_array($result->status, ['failed', 'canceled', 'cancelled'], true)) {
                     event(new PaymentFailed($payment));
                 } elseif ($result->status === 'refunded') {
                     $refund = Refund::where('payment_id', $payment->id)->latest()->first();
@@ -59,5 +64,41 @@ class ProcessWebhook implements ShouldQueue
         }
 
         $this->webhookLog->update(['processed_at' => now()]);
+    }
+
+    /**
+     * Some providers send different identifiers in redirect and webhook
+     * payloads. The internal reference stored in metadata gives us one
+     * stable lookup path across those variants.
+     */
+    protected function findPaymentFromMetadata(array $metadata): ?Payment
+    {
+        $providerMetadata = is_array($metadata['metadata'] ?? null) ? $metadata['metadata'] : [];
+        $reference = $metadata['reference']
+            ?? $providerMetadata['reference']
+            ?? $metadata['custom_id']
+            ?? null;
+
+        if ($reference) {
+            $payment = Payment::query()
+                ->where('gateway', $this->webhookLog->gateway)
+                ->where('metadata->reference', (string) $reference)
+                ->first();
+
+            if ($payment) {
+                return $payment;
+            }
+        }
+
+        $creditOrderId = $metadata['credit_order_id'] ?? $providerMetadata['credit_order_id'] ?? null;
+
+        if ($creditOrderId) {
+            return Payment::query()
+                ->where('gateway', $this->webhookLog->gateway)
+                ->where('metadata->credit_order_id', $creditOrderId)
+                ->first();
+        }
+
+        return null;
     }
 }

@@ -47,6 +47,14 @@ class CreditCheckoutController extends Controller
             return redirect()->away($result['redirect_url']);
         }
 
+        if (! empty($result['client_data']) && ! empty($result['payment'])) {
+            return redirect()->route('payments.action', $result['payment']->uuid);
+        }
+
+        if (($result['status'] ?? null) === 'failed') {
+            return back()->with('error', $result['message'] ?? __('Payment could not be started. Please try another payment method.'));
+        }
+
         if (($result['status'] ?? null) === 'completed') {
             $order = $result['order'] ?? null;
 

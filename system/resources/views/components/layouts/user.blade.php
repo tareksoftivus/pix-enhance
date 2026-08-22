@@ -197,6 +197,10 @@
                             'markAllReadUrl' => route($panelKey . '.system-notifications.mark-all-read'),
                             'viewAllUrl' => route($panelKey . '.system-notifications.index'),
                             'initialUnreadCount' => $unreadNotificationCount,
+                            'labels' => [
+                                'notifications' => __('Notifications'),
+                                'notificationsUnread' => __('Notifications, unread items'),
+                            ],
                         ];
                     @endphp
 
@@ -204,7 +208,7 @@
                         <button type="button"
                                 class="icon-btn"
                                 @click="togglePanel()"
-                                x-bind:aria-label='unreadCount > 0 ? {{ Js::from(__('Notifications, unread items')) }} : {{ Js::from(__('Notifications')) }}'>
+                                x-bind:aria-label="notificationAriaLabel()">
                             <i data-lucide="bell"></i>
                             <span class="icon-btn__dot"
                                   x-show="unreadCount > 0"

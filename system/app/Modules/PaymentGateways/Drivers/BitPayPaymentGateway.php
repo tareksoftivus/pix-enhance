@@ -7,6 +7,7 @@ use App\Modules\PaymentGateways\DataObjects\PaymentData;
 use App\Modules\PaymentGateways\DataObjects\PaymentResponse;
 use App\Modules\PaymentGateways\DataObjects\RefundResult;
 use App\Modules\PaymentGateways\DataObjects\WebhookResult;
+use App\Modules\PaymentGateways\Drivers\Concerns\BuildsGatewayReturnUrls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -20,6 +21,8 @@ use RuntimeException;
  */
 class BitPayPaymentGateway implements PaymentGatewayInterface
 {
+    use BuildsGatewayReturnUrls;
+
     protected string $liveUrl = 'https://bitpay.com';
 
     protected string $testUrl = 'https://test.bitpay.com';
@@ -75,7 +78,7 @@ class BitPayPaymentGateway implements PaymentGatewayInterface
                     'currency' => strtoupper($data->currency),
                     'orderId' => $reference,
                     'itemDesc' => $data->description ?: 'Payment',
-                    'redirectURL' => $data->returnUrl,
+                    'redirectURL' => $this->returnUrlWithReference($data->returnUrl, $reference),
                     'closeURL' => $data->cancelUrl,
                     'notificationURL' => route('webhooks.payments', ['gateway' => 'bitpay']),
                 ]));
@@ -92,8 +95,9 @@ class BitPayPaymentGateway implements PaymentGatewayInterface
                 return PaymentResponse::failed('BitPay invoice url not found in response.');
             }
 
-            return PaymentResponse::redirect($invoice['id'], $url, [
+            return PaymentResponse::redirect($reference, $url, [
                 'reference' => $reference,
+                'bitpay_id' => $invoice['id'],
             ]);
         } catch (\Exception $e) {
             return PaymentResponse::failed($e->getMessage());
@@ -110,6 +114,12 @@ class BitPayPaymentGateway implements PaymentGatewayInterface
 
         if (empty($invoiceId)) {
             return PaymentResponse::failed('Missing BitPay invoice id for verification.');
+        }
+
+        if (str_starts_with((string) $invoiceId, 'btp_')) {
+            return PaymentResponse::pending((string) $invoiceId, [
+                'note' => 'BitPay return does not include the invoice id; waiting for webhook confirmation.',
+            ]);
         }
 
         try {

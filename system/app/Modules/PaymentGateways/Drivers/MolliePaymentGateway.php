@@ -7,6 +7,7 @@ use App\Modules\PaymentGateways\DataObjects\PaymentData;
 use App\Modules\PaymentGateways\DataObjects\PaymentResponse;
 use App\Modules\PaymentGateways\DataObjects\RefundResult;
 use App\Modules\PaymentGateways\DataObjects\WebhookResult;
+use App\Modules\PaymentGateways\Drivers\Concerns\BuildsGatewayReturnUrls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -21,6 +22,8 @@ use RuntimeException;
  */
 class MolliePaymentGateway implements PaymentGatewayInterface
 {
+    use BuildsGatewayReturnUrls;
+
     protected string $baseUrl = 'https://api.mollie.com/v2';
 
     public function name(): string
@@ -62,7 +65,7 @@ class MolliePaymentGateway implements PaymentGatewayInterface
                         'value' => number_format($data->amount, 2, '.', ''),
                     ],
                     'description' => $data->description ?: 'Payment',
-                    'redirectUrl' => $data->returnUrl,
+                    'redirectUrl' => $this->returnUrlWithReference($data->returnUrl, $reference),
                     'cancelUrl' => $data->cancelUrl,
                     'webhookUrl' => route('webhooks.payments', ['gateway' => 'mollie']),
                     'metadata' => array_filter([
@@ -84,8 +87,9 @@ class MolliePaymentGateway implements PaymentGatewayInterface
                 return PaymentResponse::failed('Mollie checkout URL not found in response.');
             }
 
-            return PaymentResponse::redirect($result['id'], $checkoutUrl, [
+            return PaymentResponse::redirect($reference, $checkoutUrl, [
                 'reference' => $reference,
+                'mollie_id' => $result['id'],
             ]);
         } catch (\Exception $e) {
             return PaymentResponse::failed($e->getMessage());
@@ -106,6 +110,12 @@ class MolliePaymentGateway implements PaymentGatewayInterface
 
         if (empty($paymentId)) {
             return PaymentResponse::failed('Missing Mollie payment id for verification.');
+        }
+
+        if (str_starts_with((string) $paymentId, 'mol_')) {
+            return PaymentResponse::pending((string) $paymentId, [
+                'note' => 'Mollie return does not include the payment id; waiting for webhook confirmation.',
+            ]);
         }
 
         return $this->fetchPaymentStatus($paymentId);

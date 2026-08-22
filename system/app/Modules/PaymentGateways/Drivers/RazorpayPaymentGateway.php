@@ -70,11 +70,11 @@ class RazorpayPaymentGateway implements PaymentGatewayInterface
                 'amount' => (int) round($data->amount * 100),
                 'currency' => strtoupper($data->currency),
                 'receipt' => $data->metadata['receipt'] ?? uniqid('rcpt_'),
-                'notes' => array_filter([
+                'notes' => array_filter(array_merge($data->metadata, [
                     'description' => $data->description,
                     'user_id' => $data->userId,
                     'user_type' => $data->userType,
-                ]),
+                ])),
             ]);
 
             return PaymentResponse::clientAction($order->id, [
@@ -118,14 +118,14 @@ class RazorpayPaymentGateway implements PaymentGatewayInterface
             $payment = $this->getApi()->payment->fetch($paymentId);
 
             return match ($payment->status) {
-                'captured' => PaymentResponse::completed($paymentId, [
-                    'order_id' => $orderId,
+                'captured' => PaymentResponse::completed($orderId, [
+                    'razorpay_payment_id' => $paymentId,
                     'amount' => $payment->amount / 100,
                     'currency' => $payment->currency,
                     'method' => $payment->method,
                 ]),
-                'authorized' => PaymentResponse::completed($paymentId, [
-                    'order_id' => $orderId,
+                'authorized' => PaymentResponse::completed($orderId, [
+                    'razorpay_payment_id' => $paymentId,
                     'note' => 'Payment authorized, capture may be pending.',
                 ]),
                 default => PaymentResponse::failed("Razorpay payment status: {$payment->status}"),
@@ -185,7 +185,7 @@ class RazorpayPaymentGateway implements PaymentGatewayInterface
         $eventType = $payload['event'] ?? 'unknown';
         $entity = $payload['payload']['payment']['entity'] ?? [];
 
-        $gatewayPaymentId = $entity['id'] ?? null;
+        $gatewayPaymentId = $entity['order_id'] ?? ($entity['id'] ?? null);
 
         $status = match ($eventType) {
             'payment.authorized' => 'authorized',
@@ -199,7 +199,9 @@ class RazorpayPaymentGateway implements PaymentGatewayInterface
             gatewayPaymentId: $gatewayPaymentId,
             status: $status,
             eventType: $eventType,
-            metadata: $entity,
+            metadata: array_merge($entity, array_filter([
+                'razorpay_payment_id' => $entity['id'] ?? null,
+            ])),
         );
     }
 

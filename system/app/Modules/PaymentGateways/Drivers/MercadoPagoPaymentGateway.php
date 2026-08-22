@@ -7,12 +7,15 @@ use App\Modules\PaymentGateways\DataObjects\PaymentData;
 use App\Modules\PaymentGateways\DataObjects\PaymentResponse;
 use App\Modules\PaymentGateways\DataObjects\RefundResult;
 use App\Modules\PaymentGateways\DataObjects\WebhookResult;
+use App\Modules\PaymentGateways\Drivers\Concerns\BuildsGatewayReturnUrls;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 class MercadoPagoPaymentGateway implements PaymentGatewayInterface
 {
+    use BuildsGatewayReturnUrls;
+
     protected string $baseUrl = 'https://api.mercadopago.com';
 
     public function name(): string
@@ -60,8 +63,8 @@ class MercadoPagoPaymentGateway implements PaymentGatewayInterface
                     ]],
                     'external_reference' => $reference,
                     'back_urls' => array_filter([
-                        'success' => $data->returnUrl,
-                        'pending' => $data->returnUrl,
+                        'success' => $this->returnUrlWithReference($data->returnUrl, $reference),
+                        'pending' => $this->returnUrlWithReference($data->returnUrl, $reference),
                         'failure' => $data->cancelUrl,
                     ]),
                     'auto_return' => $data->returnUrl ? 'approved' : null,

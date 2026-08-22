@@ -163,7 +163,8 @@ class CreditCheckoutService
 
         abort_if(! $pack, 404);
 
-        $fee = $this->gatewaySettings->feeFor($gateway ?? $this->gateways->driver()->name(), $pack['price']);
+        $gatewayName = $gateway ?? $this->gateways->driver()->name();
+        $fee = $this->gatewaySettings->feeFor($gatewayName, $pack['price']);
 
         $order = CreditOrder::create([
             'uuid' => (string) Str::ulid(),
@@ -172,7 +173,7 @@ class CreditCheckoutService
             'reference' => $pack['slug'],
             'name' => $pack['name'],
             'credits' => $pack['credits'],
-            'gateway' => $gateway,
+            'gateway' => $gatewayName,
             'subtotal' => $pack['price'],
             'fee' => $fee['fee'],
             'total' => $fee['total'],
@@ -182,8 +183,10 @@ class CreditCheckoutService
 
         try {
             $checkout = $this->payments->charge($fee['total'], $pack['currency'], [
-                'gateway' => $gateway,
+                'gateway' => $gatewayName,
                 'description' => __(':credits credit pack', ['credits' => number_format($pack['credits'])]),
+                'return_url' => route('payments.return', ['gateway' => $gatewayName]),
+                'cancel_url' => route('payments.cancel', ['gateway' => $gatewayName]),
                 'user_id' => $user->id,
                 'user_type' => $user->getMorphClass(),
                 'metadata' => [
@@ -193,6 +196,9 @@ class CreditCheckoutService
                     'credit_pack_slug' => $pack['slug'],
                     'credit_pack_name' => $pack['name'],
                     'credit_order_id' => $order->id,
+                    'email' => $user->email,
+                    'customer_email' => $user->email,
+                    'customer_name' => $user->name,
                 ],
             ]);
         } catch (\Throwable $e) {
@@ -203,7 +209,7 @@ class CreditCheckoutService
 
         $order->update([
             'payment_id' => $checkout['payment']->id,
-            'status' => $checkout['payment']->status === 'completed' ? 'completed' : 'pending',
+            'status' => $checkout['payment']->status,
         ]);
 
         return $this->normalizeCheckoutResult($checkout, $order);
@@ -254,7 +260,8 @@ class CreditCheckoutService
             ];
         }
 
-        $fee = $this->gatewaySettings->feeFor($gateway ?? $this->gateways->driver()->name(), (float) $plan->price_monthly);
+        $gatewayName = $gateway ?? $this->gateways->driver()->name();
+        $fee = $this->gatewaySettings->feeFor($gatewayName, (float) $plan->price_monthly);
 
         $order = CreditOrder::create([
             'uuid' => (string) Str::ulid(),
@@ -264,7 +271,7 @@ class CreditCheckoutService
             'name' => $plan->name,
             'credits' => (int) $plan->credits_monthly,
             'pricing_plan_id' => $plan->id,
-            'gateway' => $gateway,
+            'gateway' => $gatewayName,
             'subtotal' => (float) $plan->price_monthly,
             'fee' => $fee['fee'],
             'total' => $fee['total'],
@@ -274,8 +281,10 @@ class CreditCheckoutService
 
         try {
             $checkout = $this->payments->charge($fee['total'], 'USD', [
-                'gateway' => $gateway,
+                'gateway' => $gatewayName,
                 'description' => __(':plan monthly plan', ['plan' => $plan->name]),
+                'return_url' => route('payments.return', ['gateway' => $gatewayName]),
+                'cancel_url' => route('payments.cancel', ['gateway' => $gatewayName]),
                 'user_id' => $user->id,
                 'user_type' => $user->getMorphClass(),
                 'metadata' => array_merge($this->planMetadata($plan, 'monthly'), [
@@ -283,6 +292,9 @@ class CreditCheckoutService
                     'credits_reason' => 'pricing_plan_purchase',
                     'credits' => (int) $plan->credits_monthly,
                     'credit_order_id' => $order->id,
+                    'email' => $user->email,
+                    'customer_email' => $user->email,
+                    'customer_name' => $user->name,
                 ]),
             ]);
         } catch (\Throwable $e) {
@@ -293,7 +305,7 @@ class CreditCheckoutService
 
         $order->update([
             'payment_id' => $checkout['payment']->id,
-            'status' => $checkout['payment']->status === 'completed' ? 'completed' : 'pending',
+            'status' => $checkout['payment']->status,
         ]);
 
         return $this->normalizeCheckoutResult($checkout, $order);
@@ -312,6 +324,7 @@ class CreditCheckoutService
             'status' => $checkout['payment']->status,
             'redirect_url' => $checkout['response']->redirectUrl,
             'client_data' => $checkout['response']->clientData,
+            'message' => $checkout['response']->message,
             'order' => $order,
         ];
     }

@@ -24,7 +24,7 @@ class WebhookController extends Controller
             ?? $request->input('id')
             ?? $request->input('event_id');
 
-        if ($eventId && WebhookLog::where('gateway_event_id', $eventId)->exists()) {
+        if ($eventId && WebhookLog::where('gateway', $gateway)->where('gateway_event_id', $eventId)->exists()) {
             return response('Already processed', 200);
         }
 

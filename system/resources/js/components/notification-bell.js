@@ -22,6 +22,10 @@ Alpine.data('notificationBell', (config = {}) => ({
     markReadUrl: config.markReadUrl || '',
     markAllReadUrl: config.markAllReadUrl || '',
     viewAllUrl: config.viewAllUrl || '#',
+    labels: {
+        notifications: config.labels?.notifications || 'Notifications',
+        notificationsUnread: config.labels?.notificationsUnread || 'Notifications, unread items',
+    },
 
     init() {
         this.countListener = (event) => {
@@ -51,6 +55,10 @@ Alpine.data('notificationBell', (config = {}) => ({
 
     setUnreadCount(count) {
         this.unreadCount = Math.max(0, Number(count || 0));
+    },
+
+    notificationAriaLabel() {
+        return this.unreadCount > 0 ? this.labels.notificationsUnread : this.labels.notifications;
     },
 
     async fetchUnreadCount() {

@@ -56,6 +56,9 @@ class PaymentService
         $currency = $currency ?: payment_gateway_setting('payment_currency', 'USD');
 
         $user = auth()->user();
+        $metadata = $options['metadata'] ?? [];
+        $metadata['reference'] ??= 'pay_'.strtolower((string) Str::ulid());
+
         $data = new PaymentData(
             amount: $amount,
             currency: strtoupper($currency),
@@ -63,7 +66,7 @@ class PaymentService
             paymentMethod: $options['payment_method'] ?? null,
             userId: $options['user_id'] ?? $user?->getKey(),
             userType: $options['user_type'] ?? $user?->getMorphClass(),
-            metadata: $options['metadata'] ?? [],
+            metadata: $metadata,
             returnUrl: $options['return_url'] ?? null,
             cancelUrl: $options['cancel_url'] ?? null,
         );
@@ -97,11 +100,18 @@ class PaymentService
                 'gateway_payment_id' => $response->gatewayPaymentId,
                 'status' => $response->status,
                 'paid_at' => $response->isComplete() ? now() : null,
-                'metadata' => array_merge($payment->metadata ?? [], $response->metadata),
+                'metadata' => array_merge(
+                    $payment->metadata ?? [],
+                    $response->metadata,
+                    $response->clientData ? ['client_data' => $response->clientData] : [],
+                    $response->isFailed() ? ['error' => $response->message] : [],
+                ),
             ]);
 
             if ($response->isComplete()) {
                 event(new PaymentSucceeded($payment));
+            } elseif ($response->isFailed()) {
+                event(new PaymentFailed($payment));
             } else {
                 event(new PaymentCreated($payment));
             }
@@ -132,15 +142,26 @@ class PaymentService
         $response = $driver->verifyPayment($request);
 
         if (! $response->gatewayPaymentId) {
-            throw new PaymentException('No gateway payment ID in verification response.', $driver->name());
+            throw new PaymentException(
+                $response->message ?: 'No gateway payment ID in verification response.',
+                $driver->name()
+            );
         }
 
-        $payment = Payment::where('gateway_payment_id', $response->gatewayPaymentId)->firstOrFail();
+        $payment = Payment::query()
+            ->where('gateway', $driver->name())
+            ->where('gateway_payment_id', $response->gatewayPaymentId)
+            ->firstOrFail();
 
         $payment->update([
             'status' => $response->status,
             'paid_at' => $response->isComplete() ? now() : $payment->paid_at,
-            'metadata' => array_merge($payment->metadata ?? [], $response->metadata),
+            'metadata' => array_merge(
+                $payment->metadata ?? [],
+                $response->metadata,
+                $response->clientData ? ['client_data' => $response->clientData] : [],
+                $response->isFailed() ? ['error' => $response->message] : [],
+            ),
         ]);
 
         if ($response->isComplete()) {
@@ -170,7 +191,7 @@ class PaymentService
         ]);
 
         try {
-            $result = $driver->refund($payment->gateway_payment_id, $amount, $reason);
+            $result = $driver->refund($this->refundGatewayPaymentId($payment), $amount, $reason);
 
             $refund->update([
                 'gateway_refund_id' => $result->gatewayRefundId,
@@ -196,5 +217,23 @@ class PaymentService
                 previous: $e,
             );
         }
+    }
+
+    protected function refundGatewayPaymentId(Payment $payment): string
+    {
+        $metadata = $payment->metadata ?? [];
+
+        return match ($payment->gateway) {
+            'paypal' => (string) ($metadata['capture_id'] ?? $payment->gateway_payment_id),
+            'razorpay' => (string) ($metadata['razorpay_payment_id'] ?? $payment->gateway_payment_id),
+            'paystack' => (string) ($metadata['paystack_id'] ?? $payment->gateway_payment_id),
+            'flutterwave' => (string) ($metadata['flw_transaction_id'] ?? $payment->gateway_payment_id),
+            'mercadopago' => (string) ($metadata['mercadopago_id'] ?? $payment->gateway_payment_id),
+            'mollie' => (string) ($metadata['mollie_id'] ?? $payment->gateway_payment_id),
+            'izipay' => (string) ($metadata['izipay_uuid'] ?? $payment->gateway_payment_id),
+            'xendit' => (string) ($metadata['xendit_id'] ?? $payment->gateway_payment_id),
+            'bitpay' => (string) ($metadata['bitpay_id'] ?? $payment->gateway_payment_id),
+            default => (string) $payment->gateway_payment_id,
+        };
     }
 }

@@ -85,6 +85,7 @@ class PayPalPaymentGateway implements PaymentGatewayInterface
                             'value' => number_format($data->amount, 2, '.', ''),
                         ],
                         'description' => $data->description ?? 'Payment',
+                        'custom_id' => $data->metadata['reference'] ?? null,
                     ],
                 ],
                 'application_context' => array_filter([
@@ -133,8 +134,8 @@ class PayPalPaymentGateway implements PaymentGatewayInterface
             $captureId = $result['purchase_units'][0]['payments']['captures'][0]['id'] ?? $token;
 
             if ($status === 'COMPLETED') {
-                return PaymentResponse::completed($captureId, [
-                    'order_id' => $token,
+                return PaymentResponse::completed($token, [
+                    'capture_id' => $captureId,
                     'payer' => $result['payer'] ?? [],
                 ]);
             }
@@ -206,11 +207,18 @@ class PayPalPaymentGateway implements PaymentGatewayInterface
             default => null,
         };
 
+        $orderId = $resource['supplementary_data']['related_ids']['order_id']
+            ?? $resource['supplemental_data']['related_ids']['order_id']
+            ?? null;
+
         return new WebhookResult(
-            gatewayPaymentId: $resource['id'] ?? null,
+            gatewayPaymentId: $orderId ?? ($resource['id'] ?? null),
             status: $status,
             eventType: $eventType,
-            metadata: $resource,
+            metadata: array_merge($resource, array_filter([
+                'capture_id' => $resource['id'] ?? null,
+                'order_id' => $orderId,
+            ])),
         );
     }
 
