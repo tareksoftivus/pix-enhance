@@ -20,6 +20,9 @@
     $reservedCredits = (int) ($credits['reserved'] ?? 0);
     $availableCredits = (int) ($credits['available'] ?? 0);
     $creditProgress = $creditBalance > 0 ? max(0, min(100, (int) round(($availableCredits / $creditBalance) * 100))) : 0;
+    $unreadNotificationCount = $currentUser
+        ? app(\App\Modules\SystemNotifications\Services\SystemNotificationService::class)->getUnreadCount($currentUser)
+        : 0;
 @endphp
 
 <!doctype html>
@@ -193,13 +196,20 @@
                             'markReadUrl' => route($panelKey . '.system-notifications.mark-read', ['notification' => '__ID__']),
                             'markAllReadUrl' => route($panelKey . '.system-notifications.mark-all-read'),
                             'viewAllUrl' => route($panelKey . '.system-notifications.index'),
+                            'initialUnreadCount' => $unreadNotificationCount,
                         ];
                     @endphp
 
                     <div class="dropdown" x-data="notificationBell({{ Js::from($bellConfig) }})" @keydown.escape.window="isOpen = false" @click.outside="isOpen = false">
-                        <button type="button" class="icon-btn" @click="togglePanel()" aria-label="{{ __('Notifications') }}">
+                        <button type="button"
+                                class="icon-btn"
+                                @click="togglePanel()"
+                                x-bind:aria-label='unreadCount > 0 ? {{ Js::from(__('Notifications, unread items')) }} : {{ Js::from(__('Notifications')) }}'>
                             <i data-lucide="bell"></i>
-                            <span class="icon-btn__dot" x-show="unreadCount > 0" x-cloak aria-hidden="true"></span>
+                            <span class="icon-btn__dot"
+                                  x-show="unreadCount > 0"
+                                  @if ($unreadNotificationCount === 0) x-cloak @endif
+                                  aria-hidden="true"></span>
                         </button>
 
                         <div class="dropdown__menu dropdown__menu-end" x-show="isOpen" x-cloak x-transition.origin.top.duration.200ms>

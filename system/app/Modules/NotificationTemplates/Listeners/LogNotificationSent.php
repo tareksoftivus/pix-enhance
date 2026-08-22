@@ -20,7 +20,7 @@ class LogNotificationSent
 
         $channel = $this->resolveChannelName($event->channel);
 
-        NotificationLog::where('template_slug', $event->notification->getTemplateSlug())
+        NotificationLog::where('template_slug', $event->notification->getTemplateSlug()->value)
             ->where('channel', $channel)
             ->where('notifiable_type', $event->notifiable->getMorphClass())
             ->where('notifiable_id', $event->notifiable->getKey())

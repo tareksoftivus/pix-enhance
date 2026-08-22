@@ -2,6 +2,7 @@
 
 return [
     'signup_credits' => 10,
+    'low_balance_threshold' => 10,
 
     'packs' => [
         'starter' => [

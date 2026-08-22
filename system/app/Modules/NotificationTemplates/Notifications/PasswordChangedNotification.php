@@ -2,13 +2,15 @@
 
 namespace App\Modules\NotificationTemplates\Notifications;
 
+use App\Enums\NotificationTemplateSlug;
+
 class PasswordChangedNotification extends BaseTemplateNotification
 {
     public function __construct() {}
 
-    protected function templateSlug(): string
+    protected function templateSlug(): NotificationTemplateSlug
     {
-        return 'password-changed';
+        return NotificationTemplateSlug::PASSWORD_CHANGED;
     }
 
     /**

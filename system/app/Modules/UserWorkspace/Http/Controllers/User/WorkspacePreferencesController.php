@@ -3,6 +3,7 @@
 namespace App\Modules\UserWorkspace\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Modules\SystemNotifications\Services\UserSystemNotificationService;
 use App\Modules\UserWorkspace\Http\Requests\UpdateNotificationPreferencesRequest;
 use App\Modules\UserWorkspace\Http\Requests\UpdateRenderDefaultsRequest;
 use App\Modules\UserWorkspace\Services\UserWorkspaceService;
@@ -10,7 +11,10 @@ use Illuminate\Http\RedirectResponse;
 
 class WorkspacePreferencesController extends Controller
 {
-    public function __construct(protected UserWorkspaceService $workspaceService) {}
+    public function __construct(
+        protected UserWorkspaceService $workspaceService,
+        protected UserSystemNotificationService $systemNotifications
+    ) {}
 
     public function updateNotifications(UpdateNotificationPreferencesRequest $request): RedirectResponse
     {
@@ -22,6 +26,7 @@ class WorkspacePreferencesController extends Controller
             'desktop_notifications_enabled' => $request->boolean('desktop_notifications_enabled'),
             'completion_sound_enabled' => $request->boolean('completion_sound_enabled'),
         ]);
+        $this->systemNotifications->workspacePreferencesUpdated($request->user(), __('notification'));
 
         return back()->with('success', __('Notification preferences updated successfully.'));
     }
@@ -36,6 +41,7 @@ class WorkspacePreferencesController extends Controller
             'auto_download' => $request->boolean('auto_download'),
             'source_retention_days' => $request->integer('source_retention_days'),
         ]);
+        $this->systemNotifications->workspacePreferencesUpdated($request->user(), __('render default'));
 
         return back()->with('success', __('Render defaults updated successfully.'));
     }

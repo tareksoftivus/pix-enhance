@@ -5,6 +5,7 @@ namespace App\Modules\Support\Services;
 use App\Modules\Shared\Traits\HasCrudOperations;
 use App\Modules\Support\Models\SupportTicket;
 use App\Modules\Support\Models\SupportTicketReply;
+use App\Modules\SystemNotifications\Services\UserSystemNotificationService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,6 +34,10 @@ class SupportTicketService
     protected string $defaultSortBy = 'created_at';
 
     protected string $defaultSortOrder = 'desc';
+
+    public function __construct(
+        protected UserSystemNotificationService $systemNotifications
+    ) {}
 
     protected function applyEagerLoads(Builder $query): Builder
     {
@@ -71,6 +76,8 @@ class SupportTicketService
             'last_reply_at' => now(),
         ]);
 
+        $this->systemNotifications->supportTicketOpened($ticket->fresh('user') ?? $ticket);
+
         return $ticket;
     }
 
@@ -93,6 +100,10 @@ class SupportTicketService
             'status' => $reply->isFromStaff() ? 'pending' : 'open',
         ])->save();
 
+        if ($reply->isFromStaff()) {
+            $this->systemNotifications->supportStaffReplied($ticket->fresh('user') ?? $ticket);
+        }
+
         return $reply;
     }
 
@@ -101,9 +112,15 @@ class SupportTicketService
      */
     public function changeStatus(SupportTicket $ticket, string $status): SupportTicket
     {
+        $previousStatus = $ticket->status;
         $ticket->update(['status' => $status]);
+        $ticket = $ticket->fresh('user') ?? $ticket;
 
-        return $ticket->fresh();
+        if ($previousStatus !== $ticket->status) {
+            $this->systemNotifications->supportStatusChanged($ticket);
+        }
+
+        return $ticket;
     }
 
     /**

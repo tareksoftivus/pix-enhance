@@ -5,11 +5,13 @@ namespace App\Modules\Credits\Listeners;
 use App\Models\User;
 use App\Modules\Credits\Services\CreditService;
 use App\Modules\PaymentGateways\Events\RefundProcessed;
+use App\Modules\SystemNotifications\Services\UserSystemNotificationService;
 
 class RevokeCreditsForRefund
 {
     public function __construct(
-        protected CreditService $credits
+        protected CreditService $credits,
+        protected UserSystemNotificationService $systemNotifications
     ) {}
 
     public function handle(RefundProcessed $event): void
@@ -32,7 +34,7 @@ class RevokeCreditsForRefund
         $ratio = (float) $refund->amount / max((float) $payment->amount, 0.01);
         $creditsToRevoke = (int) ceil($purchasedCredits * min(1, $ratio));
 
-        $this->credits->revoke(
+        $transaction = $this->credits->revoke(
             $user,
             $creditsToRevoke,
             'payment_refund',
@@ -43,5 +45,10 @@ class RevokeCreditsForRefund
             ]),
             'refund:'.$refund->id.':credits'
         );
+
+        if ($transaction) {
+            $this->systemNotifications->creditsRevoked($user, $transaction);
+            $this->systemNotifications->creditsLow($user, $this->credits->summaryFor($user)['available']);
+        }
     }
 }

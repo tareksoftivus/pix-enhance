@@ -5,11 +5,13 @@ namespace App\Modules\Credits\Listeners;
 use App\Models\User;
 use App\Modules\Credits\Services\CreditService;
 use App\Modules\PaymentGateways\Events\PaymentSucceeded;
+use App\Modules\SystemNotifications\Services\UserSystemNotificationService;
 
 class GrantCreditsForSuccessfulPayment
 {
     public function __construct(
-        protected CreditService $credits
+        protected CreditService $credits,
+        protected UserSystemNotificationService $systemNotifications
     ) {}
 
     public function handle(PaymentSucceeded $event): void
@@ -33,7 +35,7 @@ class GrantCreditsForSuccessfulPayment
             return;
         }
 
-        $this->credits->grant(
+        $transaction = $this->credits->grant(
             $user,
             $amount,
             (string) ($metadata['credits_reason'] ?? 'payment_credit'),
@@ -41,5 +43,7 @@ class GrantCreditsForSuccessfulPayment
             $metadata,
             'payment:'.$payment->id.':credits'
         );
+
+        $this->systemNotifications->creditsGranted($user, $transaction);
     }
 }

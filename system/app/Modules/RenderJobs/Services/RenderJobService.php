@@ -7,6 +7,7 @@ use App\Modules\Credits\Exceptions\InsufficientCreditsException;
 use App\Modules\Credits\Models\CreditReservation;
 use App\Modules\Credits\Services\CreditService;
 use App\Modules\RenderJobs\Models\RenderJob;
+use App\Modules\SystemNotifications\Services\UserSystemNotificationService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -20,7 +21,8 @@ class RenderJobService
     public function __construct(
         protected CreditService $creditService,
         protected LocalRenderProcessor $localProcessor,
-        protected AiImageRenderProcessor $aiProcessor
+        protected AiImageRenderProcessor $aiProcessor,
+        protected UserSystemNotificationService $systemNotifications
     ) {}
 
     /**
@@ -129,6 +131,13 @@ class RenderJobService
 
             $this->captureReservation($job);
 
+            $freshJob = $job->fresh('user') ?? $job;
+            $this->systemNotifications->renderCompleted($freshJob);
+
+            if ($freshJob->user) {
+                $this->systemNotifications->creditsLow($freshJob->user, $this->creditService->summaryFor($freshJob->user)['available']);
+            }
+
             return $job->fresh();
         } catch (Throwable $exception) {
             $this->fail($job, $exception->getMessage());
@@ -150,6 +159,8 @@ class RenderJobService
             'progress' => 0,
             'cancelled_at' => now(),
         ])->save();
+
+        $this->systemNotifications->renderCancelled($job->fresh('user') ?? $job);
 
         return $job->fresh();
     }
@@ -186,6 +197,8 @@ class RenderJobService
             'failed_at' => now(),
             'error_message' => Str::limit($message, 1000, ''),
         ])->save();
+
+        $this->systemNotifications->renderFailed($job->fresh('user') ?? $job);
 
         return $job->fresh();
     }

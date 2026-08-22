@@ -26,7 +26,7 @@ class InAppChannel
         $this->systemNotificationService->send(
             $notifiable,
             $data,
-            $notification->getTemplateSlug()
+            $notification->getTemplateSlug()->value
         );
     }
 }

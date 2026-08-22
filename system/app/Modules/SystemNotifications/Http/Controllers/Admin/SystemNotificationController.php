@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\View\View;
+use Spatie\Permission\Models\Role;
 
 class SystemNotificationController extends Controller implements HasMiddleware
 {
@@ -71,7 +72,7 @@ class SystemNotificationController extends Controller implements HasMiddleware
 
     public function markRead(string $notification): JsonResponse
     {
-        $this->service->markAsRead($notification);
+        $this->service->markAsReadFor(auth('admin')->user(), $notification);
 
         return response()->json(['success' => true]);
     }

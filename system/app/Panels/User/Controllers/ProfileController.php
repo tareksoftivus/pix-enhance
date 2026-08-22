@@ -5,6 +5,7 @@ namespace App\Panels\User\Controllers;
 use App\Http\Controllers\Controller;
 use App\Mail\PasswordChangedMail;
 use App\Modules\Shared\Services\SessionService;
+use App\Modules\SystemNotifications\Services\UserSystemNotificationService;
 use App\Panels\User\Requests\UpdateProfileRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,7 +14,10 @@ use Illuminate\Support\Facades\Mail;
 
 class ProfileController extends Controller
 {
-    public function __construct(protected SessionService $sessionService) {}
+    public function __construct(
+        protected SessionService $sessionService,
+        protected UserSystemNotificationService $systemNotifications
+    ) {}
 
     public function edit(): RedirectResponse
     {
@@ -52,19 +56,29 @@ class ProfileController extends Controller
         }
 
         $user->update($data);
+        $user->refresh();
+
+        $this->systemNotifications->profileUpdated($user);
 
         if ($emailChanged) {
             $user->forceFill(['email_verified_at' => null])->save();
+            $user->refresh();
 
             if (setting('require_email_verification', true)) {
                 $user->sendEmailVerificationNotification();
+                $this->systemNotifications->emailVerificationRequired($user);
             }
+        }
+
+        if ($phoneChanged) {
+            $this->systemNotifications->phoneVerificationRequired($user);
         }
 
         if ($passwordChanged) {
             $this->sessionService->revokeAllOtherSessions($user->id, session()->getId());
 
             Mail::to($user)->queue(new PasswordChangedMail($user, $request->ip()));
+            $this->systemNotifications->passwordChanged($user, $request->ip());
         }
 
         return back()->with('success', 'Profile updated successfully.');
@@ -75,6 +89,7 @@ class ProfileController extends Controller
         $user = auth()->user();
 
         $this->sessionService->revokeSession($sessionId, $user->id);
+        $this->systemNotifications->sessionRevoked($user);
 
         return back()->with('success', __('Session revoked successfully.'));
     }
@@ -84,6 +99,7 @@ class ProfileController extends Controller
         $user = auth()->user();
 
         $this->sessionService->revokeAllOtherSessions($user->id, session()->getId());
+        $this->systemNotifications->sessionsRevoked($user);
 
         return back()->with('success', __('All other sessions have been revoked.'));
     }

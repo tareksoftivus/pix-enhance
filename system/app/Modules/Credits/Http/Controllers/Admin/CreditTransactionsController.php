@@ -9,6 +9,7 @@ use App\Modules\Credits\Http\Requests\StoreCreditAdjustmentRequest;
 use App\Modules\Credits\Models\CreditTransaction;
 use App\Modules\Credits\Models\CreditWallet;
 use App\Modules\Credits\Services\CreditService;
+use App\Modules\SystemNotifications\Services\UserSystemNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -18,7 +19,8 @@ use Illuminate\View\View;
 class CreditTransactionsController extends Controller implements HasMiddleware
 {
     public function __construct(
-        protected CreditService $credits
+        protected CreditService $credits,
+        protected UserSystemNotificationService $systemNotifications
     ) {}
 
     public static function middleware(): array
@@ -58,9 +60,12 @@ class CreditTransactionsController extends Controller implements HasMiddleware
 
         try {
             if ($amount > 0) {
-                $this->credits->grant($user, $amount, 'admin_adjustment', null, $metadata);
+                $transaction = $this->credits->grant($user, $amount, 'admin_adjustment', null, $metadata);
+                $this->systemNotifications->creditsGranted($user, $transaction);
             } else {
-                $this->credits->spend($user, abs($amount), 'admin_adjustment', null, $metadata);
+                $transaction = $this->credits->spend($user, abs($amount), 'admin_adjustment', null, $metadata);
+                $this->systemNotifications->creditsRevoked($user, $transaction);
+                $this->systemNotifications->creditsLow($user, $this->credits->summaryFor($user)['available']);
             }
         } catch (InsufficientCreditsException $exception) {
             return back()->withInput()->with('error', $exception->getMessage());

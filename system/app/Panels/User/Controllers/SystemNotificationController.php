@@ -71,7 +71,7 @@ class SystemNotificationController extends Controller
      */
     public function markRead(string $notification): JsonResponse
     {
-        $this->service->markAsRead($notification);
+        $this->service->markAsReadFor(auth()->user(), $notification);
 
         return response()->json(['success' => true]);
     }

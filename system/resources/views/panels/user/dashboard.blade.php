@@ -28,10 +28,6 @@
                 <i data-lucide="clock"></i>
                 {{ __('History') }}
             </a>
-            <a class="btn btn-soft btn-sm" href="{{ \Illuminate\Support\Facades\Route::has('home') ? route('home') : '/' }}">
-                <i data-lucide="terminal"></i>
-                {{ __('Use the API') }}
-            </a>
             <label class="btn btn-primary btn-sm" for="studio-file" data-ripple>
                 <i data-lucide="cloud-upload"></i>
                 {{ __('Upload image') }}

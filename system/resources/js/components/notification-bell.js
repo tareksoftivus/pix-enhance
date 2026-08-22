@@ -10,7 +10,7 @@ import Alpine from 'alpinejs';
 
 Alpine.data('notificationBell', (config = {}) => ({
     isOpen: false,
-    unreadCount: 0,
+    unreadCount: Number(config.initialUnreadCount || 0),
     notifications: [],
     loading: false,
     pollInterval: null,

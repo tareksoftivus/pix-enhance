@@ -26,6 +26,26 @@ class SystemNotificationService
     }
 
     /**
+     * Send a notification once per notifiable/type/key combination.
+     *
+     * @param  array{title: string, body: string, icon?: string, url?: string, type?: string, key?: string}  $data
+     */
+    public function sendOnce(Model $notifiable, array $data, string $type, string $key): SystemNotification
+    {
+        $existing = SystemNotification::forNotifiable($notifiable)
+            ->where('type', $type)
+            ->latest()
+            ->get()
+            ->first(fn (SystemNotification $notification): bool => ($notification->data['key'] ?? null) === $key);
+
+        if ($existing) {
+            return $existing;
+        }
+
+        return $this->send($notifiable, array_merge($data, ['key' => $key]), $type);
+    }
+
+    /**
      * Send a notification to multiple notifiable entities.
      *
      * @param  array{title: string, body: string, icon?: string, url?: string, type?: string}  $data
@@ -68,6 +88,17 @@ class SystemNotificationService
     public function markAsRead(string $id): SystemNotification
     {
         $notification = SystemNotification::findOrFail($id);
+        $notification->markAsRead();
+
+        return $notification;
+    }
+
+    /**
+     * Mark a single notification as read for the given notifiable.
+     */
+    public function markAsReadFor(Model $notifiable, string $id): SystemNotification
+    {
+        $notification = SystemNotification::forNotifiable($notifiable)->findOrFail($id);
         $notification->markAsRead();
 
         return $notification;

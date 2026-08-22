@@ -9,6 +9,7 @@ use App\Modules\PaymentGateways\Services\PaymentGatewayManager;
 use App\Modules\PaymentGateways\Services\PaymentService;
 use App\Modules\PaymentGatewaySettings\Services\PaymentGatewaySettingsService;
 use App\Modules\PricingPlan\Models\PricingPlan;
+use App\Modules\SystemNotifications\Services\UserSystemNotificationService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
@@ -18,7 +19,8 @@ class CreditCheckoutService
         protected CreditService $credits,
         protected PaymentService $payments,
         protected PaymentGatewayManager $gateways,
-        protected PaymentGatewaySettingsService $gatewaySettings
+        protected PaymentGatewaySettingsService $gatewaySettings,
+        protected UserSystemNotificationService $systemNotifications
     ) {}
 
     /**
@@ -239,6 +241,7 @@ class CreditCheckoutService
                 $this->planMetadata($plan, 'free'),
                 'plan:'.$plan->id.':user:'.$user->id.':free'
             );
+            $this->systemNotifications->creditsGranted($user, $transaction);
 
             return [
                 'payment' => null,

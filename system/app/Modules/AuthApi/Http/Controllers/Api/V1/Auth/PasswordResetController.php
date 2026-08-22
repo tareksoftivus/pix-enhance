@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\AuthApi\Http\Requests\Api\V1\Auth\ForgotPasswordRequest;
 use App\Modules\AuthApi\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
 use App\Modules\Shared\Traits\ApiResponse;
+use App\Modules\SystemNotifications\Services\UserSystemNotificationService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
@@ -52,6 +53,7 @@ class PasswordResetController extends Controller
                 ])->save();
 
                 event(new PasswordReset($user));
+                app(UserSystemNotificationService::class)->passwordChanged($user);
             },
         );
 

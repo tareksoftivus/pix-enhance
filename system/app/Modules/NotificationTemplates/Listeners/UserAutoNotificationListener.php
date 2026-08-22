@@ -4,15 +4,28 @@ namespace App\Modules\NotificationTemplates\Listeners;
 
 use App\Events\UserAutoNotification;
 use App\Modules\NotificationTemplates\Notifications\SendAutoNotification;
+use App\Modules\SystemNotifications\Services\UserSystemNotificationService;
 use Illuminate\Support\Facades\Log;
 
 class UserAutoNotificationListener
 {
+    public function __construct(
+        protected UserSystemNotificationService $systemNotifications
+    ) {}
+
     public function handle(UserAutoNotification $event): void
     {
         $user = $event->user;
         $templateSlug = $event->templateSlug;
         $template = $templateSlug->template();
+        $templateSendsInApp = $template?->is_active && in_array('in_app', $template->getEnabledChannels(), true);
+
+        if (! $templateSendsInApp) {
+            match ($templateSlug->value) {
+                'welcome' => $this->systemNotifications->welcome($user),
+                default => null,
+            };
+        }
 
         if ($template) {
             $user->notify(new SendAutoNotification($templateSlug));
