@@ -14,6 +14,7 @@ Alpine.data('notificationBell', (config = {}) => ({
     notifications: [],
     loading: false,
     pollInterval: null,
+    countListener: null,
 
     // Route URLs passed from Blade
     unreadCountUrl: config.unreadCountUrl || '',
@@ -23,6 +24,11 @@ Alpine.data('notificationBell', (config = {}) => ({
     viewAllUrl: config.viewAllUrl || '#',
 
     init() {
+        this.countListener = (event) => {
+            this.setUnreadCount(event.detail?.count || 0);
+        };
+        document.addEventListener('system-notifications:unread-count', this.countListener);
+
         this.fetchUnreadCount();
 
         // Poll every 60 seconds
@@ -37,6 +43,14 @@ Alpine.data('notificationBell', (config = {}) => ({
         if (this.pollInterval) {
             clearInterval(this.pollInterval);
         }
+
+        if (this.countListener) {
+            document.removeEventListener('system-notifications:unread-count', this.countListener);
+        }
+    },
+
+    setUnreadCount(count) {
+        this.unreadCount = Math.max(0, Number(count || 0));
     },
 
     async fetchUnreadCount() {
@@ -53,7 +67,7 @@ Alpine.data('notificationBell', (config = {}) => ({
             if (!response.ok) return;
 
             const data = await response.json();
-            this.unreadCount = data.count || 0;
+            this.setUnreadCount(data.count || 0);
         } catch (error) {
             // Silently fail — polling will retry
         }
@@ -116,7 +130,7 @@ Alpine.data('notificationBell', (config = {}) => ({
             }
 
             if (this.unreadCount > 0) {
-                this.unreadCount--;
+                this.setUnreadCount(this.unreadCount - 1);
             }
         } catch (error) {
             console.error('Failed to mark notification as read:', error);
@@ -143,7 +157,7 @@ Alpine.data('notificationBell', (config = {}) => ({
             this.notifications.forEach(n => {
                 n.read_at = new Date().toISOString();
             });
-            this.unreadCount = 0;
+            this.setUnreadCount(0);
         } catch (error) {
             console.error('Failed to mark all notifications as read:', error);
         }

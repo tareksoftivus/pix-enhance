@@ -3,6 +3,7 @@
 namespace App\Panels\Admin\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Modules\SystemNotifications\Services\AdminSystemNotificationService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,6 +40,7 @@ class ResetPasswordController extends Controller
                 $admin->save();
 
                 event(new PasswordReset($admin));
+                app(AdminSystemNotificationService::class)->passwordChanged($admin);
             }
         );
 

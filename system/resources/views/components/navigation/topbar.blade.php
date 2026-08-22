@@ -67,18 +67,27 @@
         {{-- Notification Bell --}}
         @php
             $currentPanelKey = app('current.panel')['key'] ?? 'user';
+            $currentPanelGuard = $panelGuard ?? (app('current.panel')['guard'] ?? null);
+            $currentUser = $authUser ?? ($currentPanelGuard ? auth($currentPanelGuard)->user() : auth()->user());
+            $unreadNotificationCount = $currentUser
+                ? app(\App\Modules\SystemNotifications\Services\SystemNotificationService::class)->getUnreadCount($currentUser)
+                : 0;
             $bellConfig = [
                 'unreadCountUrl' => route($currentPanelKey . '.system-notifications.unread-count'),
                 'recentUrl' => route($currentPanelKey . '.system-notifications.recent'),
                 'markReadUrl' => route($currentPanelKey . '.system-notifications.mark-read', ['notification' => '__ID__']),
                 'markAllReadUrl' => route($currentPanelKey . '.system-notifications.mark-all-read'),
                 'viewAllUrl' => route($currentPanelKey . '.system-notifications.index'),
+                'initialUnreadCount' => $unreadNotificationCount,
             ];
         @endphp
         <div class="relative" x-data="notificationBell({{ Js::from($bellConfig) }})">
-            <button @click="togglePanel()" class="relative rounded-lg p-2.5 text-neutral-500 transition-colors hover:bg-neutral-50" aria-label="{{ __('Notifications') }}">
+            <button @click="togglePanel()"
+                    class="relative rounded-lg p-2.5 text-neutral-500 transition-colors hover:bg-neutral-50"
+                    x-bind:aria-label='unreadCount > 0 ? {{ Js::from(__('Notifications, unread items')) }} : {{ Js::from(__('Notifications')) }}'>
                 <i class="ph ph-bell text-xl"></i>
-                <span x-show="unreadCount > 0" x-cloak
+                <span x-show="unreadCount > 0"
+                      @if ($unreadNotificationCount === 0) x-cloak @endif
                       x-text="unreadCount > 99 ? '99+' : unreadCount"
                       class="absolute -top-0.5 -end-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white"></span>
             </button>
@@ -152,7 +161,7 @@
                     data-target="userDropdown"
                     aria-haspopup="true">
                 {{-- User Avatar --}}
-                @php $currentUser = $authUser ?? auth()->user(); @endphp
+                @php $currentUser = $currentUser ?? ($authUser ?? auth()->user()); @endphp
                 <div class="from-primary to-secondary flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br text-xs font-bold text-white">
                     {{ strtoupper(substr($currentUser->name ?? 'U', 0, 2)) }}
                 </div>

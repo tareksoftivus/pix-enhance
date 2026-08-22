@@ -4,6 +4,7 @@ namespace App\Panels\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Modules\SystemNotifications\Services\AdminSystemNotificationService;
 use App\Panels\Admin\Requests\StoreUserRequest;
 use App\Panels\Admin\Requests\UpdateUserRequest;
 use App\Panels\Admin\Tables\UsersTable;
@@ -18,6 +19,10 @@ use Illuminate\View\View;
 
 class UserController extends Controller implements HasMiddleware
 {
+    public function __construct(
+        protected AdminSystemNotificationService $adminNotifications
+    ) {}
+
     public static function middleware(): array
     {
         return [
@@ -78,6 +83,8 @@ class UserController extends Controller implements HasMiddleware
             'phone' => $request->phone,
             'is_active' => $request->boolean('is_active', true),
         ]);
+
+        $this->adminNotifications->userCreatedByAdmin($user);
 
         return redirect()
             ->route('admin.users.index')

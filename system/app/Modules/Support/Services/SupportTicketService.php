@@ -5,6 +5,7 @@ namespace App\Modules\Support\Services;
 use App\Modules\Shared\Traits\HasCrudOperations;
 use App\Modules\Support\Models\SupportTicket;
 use App\Modules\Support\Models\SupportTicketReply;
+use App\Modules\SystemNotifications\Services\AdminSystemNotificationService;
 use App\Modules\SystemNotifications\Services\UserSystemNotificationService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -36,7 +37,8 @@ class SupportTicketService
     protected string $defaultSortOrder = 'desc';
 
     public function __construct(
-        protected UserSystemNotificationService $systemNotifications
+        protected UserSystemNotificationService $systemNotifications,
+        protected AdminSystemNotificationService $adminNotifications
     ) {}
 
     protected function applyEagerLoads(Builder $query): Builder
@@ -76,7 +78,10 @@ class SupportTicketService
             'last_reply_at' => now(),
         ]);
 
-        $this->systemNotifications->supportTicketOpened($ticket->fresh('user') ?? $ticket);
+        $ticket = $ticket->fresh('user') ?? $ticket;
+
+        $this->systemNotifications->supportTicketOpened($ticket);
+        $this->adminNotifications->supportTicketOpened($ticket);
 
         return $ticket;
     }
@@ -102,6 +107,8 @@ class SupportTicketService
 
         if ($reply->isFromStaff()) {
             $this->systemNotifications->supportStaffReplied($ticket->fresh('user') ?? $ticket);
+        } else {
+            $this->adminNotifications->supportUserReplied($ticket->fresh('user') ?? $ticket);
         }
 
         return $reply;

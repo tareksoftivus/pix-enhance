@@ -5,6 +5,7 @@ namespace App\Panels\Admin\Controllers;
 use App\Http\Controllers\Controller;
 use App\Mail\PasswordChangedMail;
 use App\Modules\Shared\Services\SessionService;
+use App\Modules\SystemNotifications\Services\AdminSystemNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +15,10 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function __construct(protected SessionService $sessionService) {}
+    public function __construct(
+        protected SessionService $sessionService,
+        protected AdminSystemNotificationService $adminNotifications
+    ) {}
 
     public function edit(): View
     {
@@ -56,8 +60,11 @@ class ProfileController extends Controller
 
         $user->update($data);
 
+        $this->adminNotifications->profileUpdated($user);
+
         if ($passwordChanged) {
             Mail::to($user)->queue(new PasswordChangedMail($user, $request->ip()));
+            $this->adminNotifications->passwordChanged($user, $request->ip());
         }
 
         return back()->with('success', 'Profile updated successfully.');
@@ -68,6 +75,7 @@ class ProfileController extends Controller
         $user = Auth::guard('admin')->user();
 
         $this->sessionService->revokeSession($sessionId, $user->id);
+        $this->adminNotifications->sessionRevoked($user);
 
         return back()->with('success', __('Session revoked successfully.'));
     }
@@ -77,6 +85,7 @@ class ProfileController extends Controller
         $user = Auth::guard('admin')->user();
 
         $this->sessionService->revokeAllOtherSessions($user->id, session()->getId());
+        $this->adminNotifications->sessionsRevoked($user);
 
         return back()->with('success', __('All other sessions have been revoked.'));
     }

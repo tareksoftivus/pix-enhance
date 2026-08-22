@@ -38,8 +38,9 @@ class SystemNotificationController extends Controller implements HasMiddleware
 
         $perPage = $request->integer('per_page') ?: 15;
         $notifications = $this->service->listPaginated($admin, $filters, $perPage);
+        $unreadCount = $this->service->getUnreadCount($admin);
 
-        return view('system-notifications::admin.index', compact('notifications'));
+        return view('system-notifications::admin.index', compact('notifications', 'unreadCount'));
     }
 
     public function unreadCount(): JsonResponse

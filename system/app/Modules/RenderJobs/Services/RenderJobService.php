@@ -7,6 +7,7 @@ use App\Modules\Credits\Exceptions\InsufficientCreditsException;
 use App\Modules\Credits\Models\CreditReservation;
 use App\Modules\Credits\Services\CreditService;
 use App\Modules\RenderJobs\Models\RenderJob;
+use App\Modules\SystemNotifications\Services\AdminSystemNotificationService;
 use App\Modules\SystemNotifications\Services\UserSystemNotificationService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
@@ -22,7 +23,8 @@ class RenderJobService
         protected CreditService $creditService,
         protected LocalRenderProcessor $localProcessor,
         protected AiImageRenderProcessor $aiProcessor,
-        protected UserSystemNotificationService $systemNotifications
+        protected UserSystemNotificationService $systemNotifications,
+        protected AdminSystemNotificationService $adminNotifications
     ) {}
 
     /**
@@ -198,7 +200,10 @@ class RenderJobService
             'error_message' => Str::limit($message, 1000, ''),
         ])->save();
 
-        $this->systemNotifications->renderFailed($job->fresh('user') ?? $job);
+        $freshJob = $job->fresh('user') ?? $job;
+
+        $this->systemNotifications->renderFailed($freshJob);
+        $this->adminNotifications->renderFailed($freshJob);
 
         return $job->fresh();
     }
